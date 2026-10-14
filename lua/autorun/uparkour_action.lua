@@ -169,8 +169,7 @@ local function AllowAction(ply, action, kind, data, cmd)
         action = action,
         kind = kind,
         data = data,
-        cmd = cmd,
-        allowed = true,
+        cmd = cmd
     }
 
     return hook.Run('UParActionCondition', ply, context) ~= false
