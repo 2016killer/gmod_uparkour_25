@@ -69,6 +69,66 @@
 --
 
 
+-- ===============================UParActionNodes===============================
+--
+-- 作用：
+--     在动作已经通过全部核心条件后，覆盖该动作的整套运动节点。
+--     这是动作级覆盖，不是逐节点修改，也不是动作权限检查。
+--
+-- 运行端：
+--     服务端
+--
+-- 签名：
+--     hook.Add('UParActionNodes', '唯一名称', function(ply, context, nodes)
+--         return nodes
+--     end)
+--
+-- 参数：
+--     ply        Player
+--     context    table，只读上下文
+--     nodes      UPar.Node 数组，默认节点
+--
+-- context.action：
+--     string
+--     当前动作名称，可能为：
+--         low_climb
+--         high_climb
+--         vault
+--         double_vault
+--         vertical_wallrun
+--         horizontal_wallrun
+--
+-- context.kind：
+--     string
+--     普通跑酷：
+--         platform
+--         pulse
+--     墙跑：
+--         vertical
+--         horizontal
+--
+-- context.data：
+--     table，检测器返回的类型化数据
+--
+-- context.cmd：
+--     CUserCmd 或 nil
+--
+-- 返回值：
+--     return nodes    使用返回的整套节点
+--     return nil      保留核心默认节点
+--
+--     不要 return false，取消动作属于 UParActionCondition。
+--     不要修改 context。
+--
+-- 注意：
+--     需要读取当前旧 move 时，由开发者自行读取 ply.upar_motion。
+--     空闲状态可能为 nil，墙跑中断转普通跑酷时通常是旧墙跑 move。
+--
+--     多个 UParActionNodes 同时注册时，第一个返回非 nil 的钩子会终止后续调用，
+--     只有返回 table 才会替换 nodes。不要让多个插件同时接管同一动作节点。
+--
+
+
 -- ===============================UParMoveFlag===============================
 --
 -- 作用：

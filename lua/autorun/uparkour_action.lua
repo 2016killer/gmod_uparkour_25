@@ -175,6 +175,22 @@ local function AllowAction(ply, action, kind, data, cmd)
     return hook.Run('UParActionCondition', ply, context) ~= false
 end
 
+local function ApplyActionNodes(ply, action, kind, data, cmd, nodes)
+    if not nodes then return end
+
+    local context = {
+        action = action,
+        kind = kind,
+        data = data,
+        cmd = cmd,
+    }
+
+    local result = hook.Run('UParActionNodes', ply, context, nodes)
+    PrintTable(result)
+    if istable(result) then return result end
+    return nodes
+end
+
 local function GetTriggerRatio(effect)
     if effect == 'low_climb' then return upar_lowclimb_trigger_ratio:GetFloat() end
     if effect == 'high_climb' then return upar_highclimb_trigger_ratio:GetFloat() end
@@ -521,6 +537,10 @@ local function GetWallRunNodes(ply, cmd)
     end
 
     if not nodes then return end
+    local actionName = kind == 'vertical' and 'vertical_wallrun' or 'horizontal_wallrun'
+    nodes = ApplyActionNodes(ply, actionName, kind, data, cmd, nodes)
+    if not nodes or #nodes < 2 then return end
+
     ply.upar_wallrun_last_normal = normal
     return nodes, 'wallrun', data
 end
@@ -603,6 +623,10 @@ local function GetParkourNodes(ply, cmd)
         and AllowAction(ply, 'low_climb', kind, data, cmd) then
         nodes = BuildClimbMove(ply, data, direction, 'low_climb')
         if nodes then action = 'low_climb' end
+    end
+
+    if nodes then
+        nodes = ApplyActionNodes(ply, action, kind, data, cmd, nodes)
     end
 
     return nodes, action
