@@ -164,6 +164,18 @@ local function GetFlatViewDirection(ply)
     return direction
 end
 
+local function AllowAction(ply, action, kind, data, cmd)
+    local context = {
+        action = action,
+        kind = kind,
+        data = data,
+        cmd = cmd,
+        allowed = true,
+    }
+
+    return hook.Run('UParActionCondition', ply, context) ~= false
+end
+
 local function GetTriggerRatio(effect)
     if effect == 'low_climb' then return upar_lowclimb_trigger_ratio:GetFloat() end
     if effect == 'high_climb' then return upar_highclimb_trigger_ratio:GetFloat() end
@@ -446,23 +458,33 @@ local function GetWallRunNodes(ply, cmd)
     local vertical, horizontal = UPar.DetectWallrun(ply)
     local viewDirection = GetFlatViewDirection(ply)
 
-    local kind
-    local data
-    if vertical and upar_vertical_wallrun_enabled:GetBool() then
+    local verticalSpeed = ply:GetVelocity().z
+    local verticalCondition = vertical
+        and upar_vertical_wallrun_enabled:GetBool()
+        and verticalSpeed >= -math.abs(UPar.ActionMAGIC.VERTICAL_WALLRUN_DIE_DOWN_SPEED)
+    if verticalCondition then
         local facingDot = viewDirection:Dot(-vertical.normal)
-        if facingDot >= math.cos(math.rad(upar_wallrun_vertical_angle:GetFloat())) then
-            kind, data = 'vertical', vertical
-        end
+        verticalCondition = facingDot >= math.cos(math.rad(upar_wallrun_vertical_angle:GetFloat()))
     end
 
-    if not kind and horizontal and upar_horizontal_wallrun_enabled:GetBool() then
+    local horizontalCondition = horizontal
+        and upar_horizontal_wallrun_enabled:GetBool()
+        and verticalSpeed >= -math.abs(UPar.ActionMAGIC.HORIZONTAL_WALLRUN_DIE_DOWN_SPEED)
+    if horizontalCondition then
         local inwardAngle = math.deg(math.atan2(
             viewDirection:Dot(-horizontal.normal),
             viewDirection:Dot(horizontal.along)
         ))
-        if inwardAngle >= upar_wallrun_horizontal_angle:GetFloat() then
-            kind, data = 'horizontal', horizontal
-        end
+        horizontalCondition = inwardAngle >= upar_wallrun_horizontal_angle:GetFloat()
+    end
+
+    local kind
+    local data
+    if verticalCondition and AllowAction(ply, 'vertical_wallrun', 'vertical', vertical, cmd) then
+        kind, data = 'vertical', vertical
+    elseif horizontalCondition
+        and AllowAction(ply, 'horizontal_wallrun', 'horizontal', horizontal, cmd) then
+        kind, data = 'horizontal', horizontal
     end
 
     if not kind then return end
@@ -494,10 +516,8 @@ local function GetWallRunNodes(ply, cmd)
 
     local nodes
     if kind == 'vertical' then
-        if ply:GetVelocity().z < -math.abs(UPar.ActionMAGIC.VERTICAL_WALLRUN_DIE_DOWN_SPEED) then return end
         nodes = BuildVerticalWallrunMove(ply, data)
     else
-        if ply:GetVelocity().z < -math.abs(UPar.ActionMAGIC.HORIZONTAL_WALLRUN_DIE_DOWN_SPEED) then return end
         nodes = BuildHorizontalWallrunMove(ply, data)
     end
 
@@ -562,22 +582,26 @@ local function GetParkourNodes(ply, cmd)
     local nodes
     local action
 
-    if doubleVaultCondition then
+    if doubleVaultCondition
+        and AllowAction(ply, 'double_vault', kind, data, cmd) then
         nodes = BuildDoubleVaultMove(ply, data, direction, 'double_vault')
         if nodes then action = 'double_vault' end
     end
 
-    if not nodes and vaultCondition then
+    if not nodes and vaultCondition
+        and AllowAction(ply, 'vault', kind, data, cmd) then
         nodes = BuildVaultMove(ply, data, direction, 'vault')
         if nodes then action = 'vault' end
     end
 
-    if not nodes and highClimbCondition then
+    if not nodes and highClimbCondition
+        and AllowAction(ply, 'high_climb', kind, data, cmd) then
         nodes = BuildClimbMove(ply, data, direction, 'high_climb')
         if nodes then action = 'high_climb' end
     end
 
-    if not nodes and lowClimbCondition then
+    if not nodes and lowClimbCondition
+        and AllowAction(ply, 'low_climb', kind, data, cmd) then
         nodes = BuildClimbMove(ply, data, direction, 'low_climb')
         if nodes then action = 'low_climb' end
     end

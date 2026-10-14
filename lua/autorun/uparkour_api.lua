@@ -1,0 +1,117 @@
+-- UParkour 扩展接口说明
+--
+-- 本文件只用于文档说明，不包含任何有效代码。
+-- 不要在这里注册钩子、创建 ConVar 或执行初始化逻辑。
+
+
+-- ===============================UParActionCondition===============================
+--
+-- 作用：
+--     给动作候选增加一个外部否决条件。
+--     核心的几何、按键、速度、启用状态等条件仍然是最终底线。
+--     这个钩子只能否决动作，不能强行开启动作。
+--
+-- 运行端：
+--     服务端
+--
+-- 签名：
+--     hook.Add('UParActionCondition', '唯一名称', function(ply, context)
+--         -- return false 表示否决当前动作
+--         -- 不返回表示不否决
+--     end)
+--
+-- 参数：
+--     ply        Player
+--     context    table
+--
+-- context.action：
+--     string
+--     当前动作名称，可能为：
+--         low_climb
+--         high_climb
+--         vault
+--         double_vault
+--         vertical_wallrun
+--         horizontal_wallrun
+--
+-- context.kind：
+--     string
+--     普通跑酷：
+--         platform
+--         pulse
+--     墙跑：
+--         vertical
+--         horizontal
+--
+-- context.data：
+--     table
+--     检测器返回的类型化数据：
+--         UPar.Platform
+--         UPar.Pulse
+--         UPar.VerticalWallrun
+--         UPar.HorizontalWallrun
+--
+-- context.cmd：
+--     CUserCmd 或 nil
+--     通过控制台命令触发时可能为 nil。
+--
+-- 返回值：
+--     return false    否决当前动作候选
+--     不返回            不否决
+--
+--     不要返回 true。
+--     不要修改 context，context 只用于读取。
+--     判定只看钩子的返回值，不读取 context 中的字段。
+--
+-- 调用时机：
+--     当前动作候选已经通过核心基础条件，并且轮到它参与优先级判定时调用。
+--     如果被否决，核心会继续尝试更低优先级的动作。
+--
+
+
+-- ===============================UParMoveFlag===============================
+--
+-- 作用：
+--     监听运动节点 flag。
+--     这是节点特效、音效、动画和统计信息的公开事件。
+--     它不是动作权限检查。
+--
+-- 运行端：
+--     服务端
+--
+-- 签名：
+--     hook.Add('UParMoveFlag', '唯一名称', function(ply, flag, index, node, move)
+--     end)
+--
+-- 参数：
+--     ply        Player
+--     flag       string，节点 flag 或手动动作 flag
+--     index      number 或 nil，运动节点触发时为节点索引
+--     node       UPar.Node 或 nil，运动节点触发时为当前节点
+--     move       table 或 nil，当前运动状态
+--
+-- 注意：
+--     手动动作事件可能只传入 (ply, flag)，
+--     因此 index、node、move 都可能为 nil，使用前必须检查。
+--
+--     当 move 存在时，move.action 表示当前动作名称。
+--     node 和 move 只读，不要修改。
+--
+-- 当前内置的节点 flag：
+--     low_climb
+--     high_climb
+--     vault
+--     double_vault_state1
+--     double_vault_state2
+--     vertical_wallrun
+--     vertical_wallrun_step
+--     horizontal_wallrun
+--     horizontal_wallrun_step
+--     move_end
+--
+-- 当前内置的手动 flag：
+--     wallrun_interrupt
+--     vertical_wallrun_interrupt
+--     vertical_wallrun_clean
+--     horizontal_wallrun_interrupt
+--     horizontal_wallrun_clean
