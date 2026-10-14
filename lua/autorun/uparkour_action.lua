@@ -186,7 +186,6 @@ local function ApplyActionNodes(ply, action, kind, data, cmd, nodes)
     }
 
     local result = hook.Run('UParActionNodes', ply, context, nodes)
-    PrintTable(result)
     if istable(result) then return result end
     return nodes
 end
