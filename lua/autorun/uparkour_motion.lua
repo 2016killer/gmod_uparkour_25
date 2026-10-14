@@ -236,8 +236,7 @@ end
 
 local upar_safe_mode = CreateConVar(
     'upar_safe_mode', '0',
-    { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE },
-    '不锁键，跳过 ACK 直接进入 noclip'
+    { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 
 if SERVER then util.AddNetworkString(NET) end
@@ -586,6 +585,8 @@ if SERVER then
     end
 
     concommand.Add('upar_move_test', function(ply, cmd, args)
+        if IsValid(ply) and not ply:IsAdmin() then return end
+
         ply = ResolvePly(ply)
         if not IsValid(ply) then print('[UPar] 没有可用玩家') return end
 
@@ -602,6 +603,8 @@ if SERVER then
     end)
 
     concommand.Add('upar_move_stop', function(ply)
+        if IsValid(ply) and not ply:IsAdmin() then return end
+
         ply = ResolvePly(ply)
         if IsValid(ply) and UPar.IsMoving(ply) then
             UPar.AbortMove(ply)

@@ -1,11 +1,9 @@
 UPar = UPar or {}
 
-local UNIT_VECTOR = Vector(0, 0, 1)
-local ZERO_VECTOR = Vector(0, 0, 0)
 local ZERO_ANGLE = Angle(0, 0, 0)
 
-local upar_obstacle_ragdoll = CreateConVar('upar_obstacle_ragdoll', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }, '是否将布娃娃视为障碍物')
-local upar_obstacle_character = CreateConVar('upar_obstacle_character', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }, '是否将NPC/玩家/NextBot视为障碍物')
+local upar_obstacle_ragdoll = CreateConVar('upar_obstacle_ragdoll', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE })
+local upar_obstacle_character = CreateConVar('upar_obstacle_character', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE })
 
 local upar_obstacle_require_frozen = CreateConVar(
     'upar_obstacle_require_frozen', '0',
@@ -368,6 +366,8 @@ end
 
 if SERVER then
     concommand.Add('upar_detector_obstacle_test', function(ply)
+        if IsValid(ply) and not ply:IsAdmin() then return end
+
         if not IsValid(ply) then 
             print('[UPar] 没有可用玩家') 
             return 
@@ -379,6 +379,8 @@ if SERVER then
     end)
 
     concommand.Add('upar_detector_height_test', function(ply, _, args)
+        if IsValid(ply) and not ply:IsAdmin() then return end
+
         if not IsValid(ply) then
             print('[UPar] 没有可用玩家')
             return
@@ -409,6 +411,8 @@ if SERVER then
     end)
 
     concommand.Add('upar_detector_type_test', function(ply)
+        if IsValid(ply) and not ply:IsAdmin() then return end
+
         if not IsValid(ply) then
             print('[UPar] 没有可用玩家')
             return

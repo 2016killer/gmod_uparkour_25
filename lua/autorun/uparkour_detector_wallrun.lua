@@ -345,6 +345,8 @@ end
 
 if SERVER then
     concommand.Add('upar_detector_wallrun_test', function(ply)
+        if IsValid(ply) and not ply:IsAdmin() then return end
+
         if not IsValid(ply) then
             print('[UPar] 没有可用玩家')
             return

@@ -17,7 +17,6 @@ UPar.ActionMAGIC = {
     WALLRUN_LAST_ANGLE_MIN = 80,
 
     PULSE_APEX = 10,
-    PULSE_EXIT_DOWN_SCALE = 0.25,
 
     LOWCLIMB_MIN_HEIGHT = 0.5,
     LOWCLIMB_MAX_HEIGHT = 0.86,
@@ -40,13 +39,11 @@ local upar_enabled = CreateConVar(
 )
 
 local upar_continuous_detect = CreateConVar(
-    'upar_continuous_detect', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE },
-    '按住触发键时是否持续检测，关闭后只响应按下瞬间'
+    'upar_continuous_detect', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 
 local upar_continuous_detect_interval = CreateConVar(
-    'upar_continuous_detect_interval', '6', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE },
-    '持续检测周期（服务器 tick）'
+    'upar_continuous_detect_interval', '6', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 
 local upar_facing_angle_delta = CreateConVar(
@@ -108,10 +105,10 @@ local upar_vertical_wallrun_height_ratio = CreateConVar(
 )
 
 local upar_key_vault_require_shift = CreateConVar(
-    'upar_key_vault_require_shift', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }, '翻越是否要求按住 Shift'
+    'upar_key_vault_require_shift', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_key_doublevault_require_shift = CreateConVar(
-    'upar_key_doublevault_require_shift', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }, '二段翻越是否要求按住 Shift'
+    'upar_key_doublevault_require_shift', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_key_block_backstrafe = CreateConVar(
     'upar_key_block_backstrafe', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
@@ -165,13 +162,6 @@ local function GetFlatViewDirection(ply)
     direction[3] = 0
     direction:Normalize()
     return direction
-end
-
-local function GetEffectName(motion, high)
-    if motion == 'climb' then
-        return high and 'high_climb' or 'low_climb'
-    end
-    return high and 'double_vault' or 'vault'
 end
 
 local function GetTriggerRatio(effect)
@@ -238,7 +228,6 @@ local function BuildVaultMove(ply, data, direction, effect)
         data.vaultLanding.z + UPar.ActionMAGIC.PULSE_APEX
     )
     local exitvel = direction * speed
-        -- + Vector(0, 0, -speed * UPar.ActionMAGIC.PULSE_EXIT_DOWN_SCALE)
 
     return {
         UPar.Node{
@@ -294,7 +283,6 @@ local function BuildDoubleVaultMove(ply, data, direction, effect)
 
 
     local exitvel = direction * speed_state2
-        -- + Vector(0, 0, -speed_state2 * UPar.ActionMAGIC.PULSE_EXIT_DOWN_SCALE)
 
     return {
         UPar.Node{
@@ -491,14 +479,16 @@ local function GetWallRunNodes(ply, cmd)
     if lastNormal then
         local dot = math.Clamp(normal:Dot(lastNormal), -1, 1)
         local angle = math.deg(math.acos(dot))
-        print(string.format(
-            '[UPar] wallrun=%s angle=%.2f dot=%.4f',
-            kind,
-            angle,
-            dot
-        ))
+        if IsDev() then
+            print(string.format(
+                '[UPar] wallrun=%s angle=%.2f dot=%.4f',
+                kind,
+                angle,
+                dot
+            ))
+        end
         if angle < UPar.ActionMAGIC.WALLRUN_LAST_ANGLE_MIN then return end
-    else
+    elseif IsDev() then
         print(string.format('[UPar] wallrun=%s angle=first', kind))
     end
 
@@ -611,7 +601,7 @@ local function TryMove(ply, cmd, detectMask)
     local state = GetActionState(ply)
     if state == 'wallrun' then
         if bit.band(detectMask, DETECT_PARKOUR) ~= 0 then
-            local nodes, action = GetParkourNodes(ply, nil)
+            local nodes, action = GetParkourNodes(ply, cmd)
             if nodes then
                 hook.Run('UParMoveFlag', ply, 'wallrun_interrupt')
                 PublishMove(ply, nodes, action, UPar.MotionMode.TELEPORT)
