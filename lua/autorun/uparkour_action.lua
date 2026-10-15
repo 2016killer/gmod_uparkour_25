@@ -31,7 +31,6 @@ UPar.ActionMAGIC = {
     DIRECTION_CHECK_MIN_SPEED = 200,
     DIE_DOWN_SPEED = 600,
     VAULT_DIE_DOWN_SPEED = 300,
-    TRIGGER_SPEED_COMP_TICKS = 3,
 }
 
 local DETECT_PARKOUR = 1
@@ -153,6 +152,9 @@ local upar_vault_trigger_ratio = CreateConVar(
 local upar_doublevault_trigger_ratio = CreateConVar(
     'upar_doublevault_trigger_ratio', '0.278', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
+local upar_trigger_speed_comp_factor = CreateConVar(
+    'upar_trigger_speed_comp_factor', '3', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
 local upar_lowclimb_trigger_speed_comp = CreateConVar(
     'upar_lowclimb_trigger_speed_comp', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
@@ -232,7 +234,7 @@ local function WithinTriggerDistance(ply, data, effect)
     if obstacleDistance > 0 then
         local direction = toObstacle / obstacleDistance
         local speedToward = math.max(0, ply:GetVelocity():Dot(direction))
-        local rawComp = speedToward * FrameTime() * UPar.ActionMAGIC.TRIGGER_SPEED_COMP_TICKS
+        local rawComp = speedToward * FrameTime() * math.max(0, upar_trigger_speed_comp_factor:GetFloat())
         local maxComp = playerWidth * math.max(0, GetTriggerSpeedComp(effect))
         local speedComp = math.min(rawComp, maxComp)
         distance = distance + speedComp
