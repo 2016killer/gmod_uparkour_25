@@ -283,7 +283,19 @@ local function StartHorizontalWallrun(ply, payload)
             if VManip:GetCurrentAnim() == vmanipAnim and IsValid(VManip:GetVMGesture()) then
                 VManip:GetVMGesture().RenderOverride = function(self)
                     local along = payload and payload.along or nil
-                    self:SetAngles(along and along:Angle() or ply:EyeAngles())
+                    local normal = payload and payload.normal or nil
+                    local newAngle
+                    local newPos
+                    if isvector(along) and isvector(normal) then
+                        newAngle = (along - 0.1 * normal):Angle()
+                        newPos = EyePos() - 6 * normal - 6 * along
+                    else
+                        newAngle = ply:EyeAngles()
+                        newPos = EyePos()
+                    end
+
+                    self:SetAngles(newAngle)
+                    self:SetPos(newPos)
                 end
             end
         end
