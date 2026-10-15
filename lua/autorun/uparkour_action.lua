@@ -862,12 +862,15 @@ concommand.Add('upar_trigger', function(ply)
     if IsValid(ply) and upar_enabled:GetBool() then TryMove(ply, nil, DETECT_ALL) end
 end)
 
-hook.Add('PlayerDeath', 'upar.action.reset_jump', function(ply)
+local function ResetActionState(ply)
     ply.upar_trigger_down = false
     ply.upar_action_next_detect_tick = 0
     ply.upar_wallrun_jump = false
     ply.upar_wallrun_last_normal = nil
-end)
+end
+
+hook.Add('PlayerDeath', 'upar.action.reset', ResetActionState)
+hook.Add('PlayerSpawn', 'upar.action.reset', ResetActionState)
 
 hook.Add('OnPlayerHitGround', 'upar.action.reset_wallrun_normal', function(ply)
     ply.upar_wallrun_last_normal = nil
