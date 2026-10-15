@@ -193,3 +193,20 @@ end
 UPar.VerticalWallrun = setmetatable(VerticalWallrun, {
     __call = function(_, t) return VerticalWallrun.new(t) end
 })
+
+
+
+
+if CLIENT then
+    concommand.Add('upar_debug_movepoint', function(ply)
+        if timer.Exists('upar_debug_movepoint') then
+            print('Remove debug movepoint')
+            timer.Remove('upar_debug_movepoint')
+        else
+            print('Create debug movepoint')
+            timer.Create('upar_debug_movepoint', 0, 0, function()
+                debugoverlay.Box(LocalPlayer():GetPos(), Vector(0, 0, 0), Vector(1, 1, 1), 2)
+            end)
+        end
+    end)
+end
