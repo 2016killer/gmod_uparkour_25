@@ -41,13 +41,12 @@ VMLegs:RegisterAnim('dp_lazy_mtbntb',
 VManip:RegisterAnim('horizontalwallrun_YongLi',
     {
         ['model']='weapons/horizontalwallrun_YongLi.mdl',
-        ['lerp_peak']=0.30,
+        ['lerp_peak']=0.265,
         ['lerp_speed_in']=0.5,
         ['lerp_speed_out']=0.5,
         ['lerp_curve']=0.8,
         ['speed']=1,
-        ['startcycle']=0.15,
-        ['holdtime']=0.30
+        ['holdtime']=0.265
     }
 )
 

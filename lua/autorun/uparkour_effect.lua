@@ -266,7 +266,15 @@ local function StartHorizontalWallrun(ply, payload)
         end
 
         local vmanipAnim = upar_effect_horizontal_wallrun_vmanip_anim:GetString()
-        if VManip and vmanipAnim ~= '' then VManip:PlayAnim(vmanipAnim) end
+        if VManip and vmanipAnim ~= '' and payload.side == 'left' then 
+            VManip:PlayAnim(vmanipAnim) 
+            if VManip:GetCurrentAnim() == vmanipAnim and IsValid(VManip:GetVMGesture()) then
+                VManip:GetVMGesture().RenderOverride = function(self)
+                    local along = payload and payload.along or nil
+                    self:SetAngles(along and along:Angle() or ply:EyeAngles())
+                end
+            end
+        end
 
         local vmlegsAnim = upar_effect_horizontal_wallrun_vmlegs_anim:GetString()
         if VMLegs and vmlegsAnim ~= '' then VMLegs:PlayAnim(vmlegsAnim) end
