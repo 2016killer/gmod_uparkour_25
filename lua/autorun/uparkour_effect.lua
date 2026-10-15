@@ -78,57 +78,37 @@ local upar_effect_horizontal_wallrun_vmanip_anim = CreateConVar('upar_effect_hor
 local upar_effect_horizontal_wallrun_vmlegs_anim = CreateConVar('upar_effect_horizontal_wallrun_vmlegs_anim', '', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE })
 local upar_effect_horizontal_wallrun_wos_anim = CreateConVar('upar_effect_horizontal_wallrun_wos_anim', '', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE })
 
-local effectConVars = {
-    low_climb = {
-        sound = upar_effect_lowclimb_sound,
-        vmanipAnim = upar_effect_lowclimb_vmanip_anim,
-        vmlegsAnim = upar_effect_lowclimb_vmlegs_anim,
-        wosAnim = upar_effect_lowclimb_wos_anim,
-    },
-    high_climb = {
-        sound = upar_effect_highclimb_sound,
-        vmanipAnim = upar_effect_highclimb_vmanip_anim,
-        vmlegsAnim = upar_effect_highclimb_vmlegs_anim,
-        wosAnim = upar_effect_highclimb_wos_anim,
-    },
-    vault = {
-        sound = upar_effect_vault_sound,
-        vmanipAnim = upar_effect_vault_vmanip_anim,
-        vmlegsAnim = upar_effect_vault_vmlegs_anim,
-        wosAnim = upar_effect_vault_wos_anim,
-    },
-    double_vault_state1 = {
-        sound = upar_effect_doublevault_state1_sound,
-        vmanipAnim = upar_effect_doublevault_state1_vmanip_anim,
-        vmlegsAnim = upar_effect_doublevault_state1_vmlegs_anim,
-        wosAnim = upar_effect_doublevault_state1_wos_anim,
-    },
-    double_vault_state2 = {
-        sound = upar_effect_doublevault_state2_sound,
-        vmanipAnim = upar_effect_doublevault_state2_vmanip_anim,
-        vmlegsAnim = upar_effect_doublevault_state2_vmlegs_anim,
-        wosAnim = upar_effect_doublevault_state2_wos_anim,
-    },
-    vertical_wallrun = {
-        sound = upar_effect_vertical_wallrun_sound,
-        vmanipAnim = upar_effect_vertical_wallrun_vmanip_anim,
-        vmlegsAnim = upar_effect_vertical_wallrun_vmlegs_anim,
-        wosAnim = upar_effect_vertical_wallrun_wos_anim,
-    },
-    horizontal_wallrun = {
-        sound = upar_effect_horizontal_wallrun_sound,
-        vmanipAnim = upar_effect_horizontal_wallrun_vmanip_anim,
-        vmlegsAnim = upar_effect_horizontal_wallrun_vmlegs_anim,
-        wosAnim = upar_effect_horizontal_wallrun_wos_anim,
-    },
-}
-
-local activeEffect
 local horizontalWallrun = {
     centerYaw = nil,
     rollTarget = 0,
     rollActive = false,
 }
+
+local function SetWOS(ply, anim)
+    if anim == '' then return end
+
+    if SERVER then
+        ply:SetNWString('UP_WOS', anim)
+    elseif CLIENT then
+        local sequence = ply:LookupSequence(anim)
+        if sequence and sequence > 0 then
+            ply:AddVCDSequenceToGestureSlot(GESTURE_SLOT_JUMP, sequence, 0, true)
+            ply:SetPlaybackRate(1)
+        end
+    end
+end
+
+local function ClearWOS(ply)
+    if SERVER and IsValid(ply) then
+        ply:SetNWString('UP_WOS', '')
+    end
+end
+
+local function EmitEffectSound(ply, sound)
+    if SERVER and sound ~= '' then
+        ply:EmitSound(sound)
+    end
+end
 
 if CLIENT then
     local function NormalizeAngle(angle)
@@ -168,53 +148,96 @@ if CLIENT then
     end)
 end
 
-local function PlayEffect(ply, effectName, payload)
-    local convars = effectConVars[effectName]
-    if not convars then return end
-    if CLIENT then activeEffect = effectName end
+local function StartLowClimb(ply, payload)
+    SetWOS(ply, upar_effect_lowclimb_wos_anim:GetString())
 
-    if CLIENT and effectName == 'horizontal_wallrun' and payload then
-        horizontalWallrun.centerYaw = math.deg(math.atan2(payload.along.y, payload.along.x))
-        horizontalWallrun.rollTarget = payload.roll
-        horizontalWallrun.rollActive = true
-    end
-
-    local wosAnim = convars.wosAnim:GetString()
-    if wosAnim ~= '' then
-        if SERVER then
-            ply:SetNWString('UP_WOS', wosAnim)
-        elseif CLIENT then
-            local sequence = ply:LookupSequence(wosAnim)
-            if sequence and sequence > 0 then
-                ply:AddVCDSequenceToGestureSlot(GESTURE_SLOT_JUMP, sequence, 0, true)
-                ply:SetPlaybackRate(1)
-            end
-        end
-    end
-
-    if SERVER and effectName == 'low_climb' then
+    if SERVER then
         ply:ViewPunch(Angle(0, 0, -2))
+        EmitEffectSound(ply, upar_effect_lowclimb_sound:GetString())
+    elseif CLIENT then
+        local vmanipAnim = upar_effect_lowclimb_vmanip_anim:GetString()
+        if VManip and vmanipAnim ~= '' then VManip:PlayAnim(vmanipAnim) end
+
+        local vmlegsAnim = upar_effect_lowclimb_vmlegs_anim:GetString()
+        if VMLegs and vmlegsAnim ~= '' then VMLegs:PlayAnim(vmlegsAnim) end
     end
+end
 
+local function StartHighClimb(ply, payload)
+    SetWOS(ply, upar_effect_highclimb_wos_anim:GetString())
 
-    if SERVER and (effectName == 'high_climb' or effectName == 'double_vault_state1') then
+    if SERVER then
         ply:ViewPunch(Angle(-20, 5, 0))
         timer.Simple(0.2, function()
             if IsValid(ply) then ply:ViewPunch(Angle(20, 0, 0)) end
         end)
-    end
+        EmitEffectSound(ply, upar_effect_highclimb_sound:GetString())
+    elseif CLIENT then
+        local vmanipAnim = upar_effect_highclimb_vmanip_anim:GetString()
+        if VManip and vmanipAnim ~= '' then VManip:PlayAnim(vmanipAnim) end
 
-    local sound = convars.sound:GetString()
-    if SERVER and sound ~= '' then
-        ply:EmitSound(sound)
+        local vmlegsAnim = upar_effect_highclimb_vmlegs_anim:GetString()
+        if VMLegs and vmlegsAnim ~= '' then VMLegs:PlayAnim(vmlegsAnim) end
     end
+end
 
-    if CLIENT then
-        local vmanipAnim = convars.vmanipAnim:GetString()
+local function StartVault(ply, payload)
+    SetWOS(ply, upar_effect_vault_wos_anim:GetString())
+
+    if SERVER then
+        EmitEffectSound(ply, upar_effect_vault_sound:GetString())
+    elseif CLIENT then
+        local vmanipAnim = upar_effect_vault_vmanip_anim:GetString()
+        if VManip and vmanipAnim ~= '' then VManip:PlayAnim(vmanipAnim) end
+
+        local vmlegsAnim = upar_effect_vault_vmlegs_anim:GetString()
+        if VMLegs and vmlegsAnim ~= '' then VMLegs:PlayAnim(vmlegsAnim) end
+    end
+end
+
+local function StartDoubleVaultState1(ply, payload)
+    SetWOS(ply, upar_effect_doublevault_state1_wos_anim:GetString())
+
+    if SERVER then
+        ply:ViewPunch(Angle(-20, 5, 0))
+        timer.Simple(0.2, function()
+            if IsValid(ply) then ply:ViewPunch(Angle(20, 0, 0)) end
+        end)
+        EmitEffectSound(ply, upar_effect_doublevault_state1_sound:GetString())
+    elseif CLIENT then
+        local vmanipAnim = upar_effect_doublevault_state1_vmanip_anim:GetString()
+        if VManip and vmanipAnim ~= '' then VManip:PlayAnim(vmanipAnim) end
+
+        local vmlegsAnim = upar_effect_doublevault_state1_vmlegs_anim:GetString()
+        if VMLegs and vmlegsAnim ~= '' then VMLegs:PlayAnim(vmlegsAnim) end
+    end
+end
+
+local function StartDoubleVaultState2(ply, payload)
+    SetWOS(ply, upar_effect_doublevault_state2_wos_anim:GetString())
+
+    if SERVER then
+        EmitEffectSound(ply, upar_effect_doublevault_state2_sound:GetString())
+    elseif CLIENT then
+        local vmanipAnim = upar_effect_doublevault_state2_vmanip_anim:GetString()
+        if VManip and vmanipAnim ~= '' then VManip:PlayAnim(vmanipAnim) end
+
+        local vmlegsAnim = upar_effect_doublevault_state2_vmlegs_anim:GetString()
+        if VMLegs and vmlegsAnim ~= '' then VMLegs:PlayAnim(vmlegsAnim) end
+    end
+end
+
+local function StartVerticalWallrun(ply, payload)
+    SetWOS(ply, upar_effect_vertical_wallrun_wos_anim:GetString())
+
+    if SERVER then
+        EmitEffectSound(ply, upar_effect_vertical_wallrun_footstep_sound:GetString())
+        EmitEffectSound(ply, upar_effect_vertical_wallrun_sound:GetString())
+    elseif CLIENT then
+        local vmanipAnim = upar_effect_vertical_wallrun_vmanip_anim:GetString()
         if VManip and vmanipAnim ~= '' then
             VManip:PlayAnim(vmanipAnim)
-            if vmanipAnim == 'verticalwallrun' and VManip:GetCurrentAnim() == vmanipAnim
-                and IsValid(VManip:GetVMGesture()) then
+            if VManip:GetCurrentAnim() == vmanipAnim and IsValid(VManip:GetVMGesture()) then
                 VManip:GetVMGesture().RenderOverride = function(self)
                     self:SetPos(EyePos() - ply:EyeAngles():Up() * 64)
                     self:SetAngles(ply:EyeAngles())
@@ -222,172 +245,181 @@ local function PlayEffect(ply, effectName, payload)
             end
         end
 
-        local vmlegsAnim = convars.vmlegsAnim:GetString()
-        if VMLegs and vmlegsAnim ~= '' then
-            VMLegs:PlayAnim(vmlegsAnim)
-        end
+        local vmlegsAnim = upar_effect_vertical_wallrun_vmlegs_anim:GetString()
+        if VMLegs and vmlegsAnim ~= '' then VMLegs:PlayAnim(vmlegsAnim) end
     end
 end
 
-local function ClearEffect(ply, endtype)
-    if CLIENT and activeEffect then
-        if activeEffect == 'horizontal_wallrun' then
-            horizontalWallrun.centerYaw = nil
-            horizontalWallrun.rollTarget = 0
+local function StartHorizontalWallrun(ply, payload)
+    SetWOS(ply, upar_effect_horizontal_wallrun_wos_anim:GetString())
+
+    if SERVER then
+        EmitEffectSound(ply, upar_effect_horizontal_wallrun_footstep_sound:GetString())
+        EmitEffectSound(ply, upar_effect_horizontal_wallrun_sound:GetString())
+    elseif CLIENT then
+        if payload and payload.along then
+            horizontalWallrun.centerYaw = math.deg(math.atan2(payload.along.y, payload.along.x))
+            local rollDirection = payload.side == 'left' and 1 or -1
+            horizontalWallrun.rollTarget =
+                rollDirection * UPar.EffectMAGIC.HORIZONTAL_WALLRUN_ROLL
             horizontalWallrun.rollActive = true
         end
 
-        local convars = effectConVars[activeEffect]
-        local vmanipAnim = convars and convars.vmanipAnim:GetString() or ''
-        if VManip and vmanipAnim ~= '' and VManip:GetCurrentAnim() == vmanipAnim then
-            VManip:QuitHolding(vmanipAnim)
-            if endtype == 'interrupt' and IsValid(VManip:GetVMGesture()) then
-                VManip:Remove()
-            end
-        end
-        activeEffect = nil
-    end
+        local vmanipAnim = upar_effect_horizontal_wallrun_vmanip_anim:GetString()
+        if VManip and vmanipAnim ~= '' then VManip:PlayAnim(vmanipAnim) end
 
-    if SERVER then
-        ply:SetNWString('UP_WOS', '')
+        local vmlegsAnim = upar_effect_horizontal_wallrun_vmlegs_anim:GetString()
+        if VMLegs and vmlegsAnim ~= '' then VMLegs:PlayAnim(vmlegsAnim) end
     end
 end
 
-if SERVER then util.AddNetworkString('UParEffect') end
-
-local function StartEffect(ply, effectName, payload)
-    if not isstring(effectName) then return end
-
-    PlayEffect(ply, effectName)
-
-    if SERVER then
-        net.Start('UParEffect')
-            net.WriteString(effectName)
-            net.WriteString('')
-            net.WriteBool(payload ~= nil)
-            if payload then
-                net.WriteVector(payload.along)
-                net.WriteFloat(payload.roll)
-            end
-        net.Send(ply)
+local function StopLowClimb(ply)
+    local anim = upar_effect_lowclimb_vmanip_anim:GetString()
+    if CLIENT and VManip and anim ~= '' and VManip:GetCurrentAnim() == anim then
+        VManip:QuitHolding(anim)
     end
+    ClearWOS(ply)
 end
 
-local function StopEffect(ply, endtype)
-    ClearEffect(ply, endtype)
-
-    if SERVER then
-        net.Start('UParEffect')
-            net.WriteString('')
-            net.WriteString(endtype or '')
-        net.Send(ply)
+local function StopHighClimb(ply)
+    local anim = upar_effect_highclimb_vmanip_anim:GetString()
+    if CLIENT and VManip and anim ~= '' and VManip:GetCurrentAnim() == anim then
+        VManip:QuitHolding(anim)
     end
+    ClearWOS(ply)
 end
 
-local function OnMoveFlag(ply, flag, index, node, move)
-    if flag == 'move_end' then
-        StopEffect(ply, 'end')
-        return
+local function StopVault(ply)
+    local anim = upar_effect_vault_vmanip_anim:GetString()
+    if CLIENT and VManip and anim ~= '' and VManip:GetCurrentAnim() == anim then
+        VManip:QuitHolding(anim)
+    end
+    ClearWOS(ply)
+end
+
+local function StopDoubleVaultState1(ply)
+    local anim = upar_effect_doublevault_state1_vmanip_anim:GetString()
+    if CLIENT and VManip and anim ~= '' and VManip:GetCurrentAnim() == anim then
+        VManip:QuitHolding(anim)
+    end
+    ClearWOS(ply)
+end
+
+local function StopDoubleVaultState2(ply)
+    local anim = upar_effect_doublevault_state2_vmanip_anim:GetString()
+    if CLIENT and VManip and anim ~= '' and VManip:GetCurrentAnim() == anim then
+        VManip:QuitHolding(anim)
+    end
+    ClearWOS(ply)
+end
+
+local function StopVerticalWallrun(ply)
+    local anim = upar_effect_vertical_wallrun_vmanip_anim:GetString()
+    if CLIENT and VManip and anim ~= '' and VManip:GetCurrentAnim() == anim then
+        VManip:QuitHolding(anim)
+    end
+    ClearWOS(ply)
+end
+
+local function InterruptVerticalWallrun(ply)
+    local anim = upar_effect_vertical_wallrun_vmanip_anim:GetString()
+    if CLIENT and VManip and anim ~= '' and VManip:GetCurrentAnim() == anim then
+        VManip:QuitHolding(anim)
+        if IsValid(VManip:GetVMGesture()) then VManip:Remove() end
+    end
+    ClearWOS(ply)
+end
+
+local function StopHorizontalWallrun(ply)
+    if CLIENT then
+        horizontalWallrun.centerYaw = nil
+        horizontalWallrun.rollTarget = 0
+        horizontalWallrun.rollActive = true
     end
 
-    if flag == 'wallrun_interrupt' then
-        StopEffect(ply, 'interrupt')
-        return
+    local anim = upar_effect_horizontal_wallrun_vmanip_anim:GetString()
+    if CLIENT and VManip and anim ~= '' and VManip:GetCurrentAnim() == anim then
+        VManip:QuitHolding(anim)
+    end
+    ClearWOS(ply)
+end
+
+local function InterruptHorizontalWallrun(ply)
+    if CLIENT then
+        horizontalWallrun.centerYaw = nil
+        horizontalWallrun.rollTarget = 0
+        horizontalWallrun.rollActive = true
     end
 
-    if flag == 'vertical_wallrun_interrupt' then
-        StopEffect(ply, 'interrupt')
-        return
-    end 
-
-    if flag == 'horizontal_wallrun_interrupt' then
-        StopEffect(ply, 'interrupt')
-        return
+    local anim = upar_effect_horizontal_wallrun_vmanip_anim:GetString()
+    if CLIENT and VManip and anim ~= '' and VManip:GetCurrentAnim() == anim then
+        VManip:QuitHolding(anim)
+        if IsValid(VManip:GetVMGesture()) then VManip:Remove() end
     end
+    ClearWOS(ply)
+end
 
-    if flag == 'vertical_wallrun_step' then
-        local sound = upar_effect_vertical_wallrun_footstep_sound:GetString()
-        if sound ~= '' then ply:EmitSound(sound) end
-        return
+local function StopAllEffects(ply)
+    StopLowClimb(ply)
+    StopHighClimb(ply)
+    StopVault(ply)
+    StopDoubleVaultState1(ply)
+    StopDoubleVaultState2(ply)
+    StopVerticalWallrun(ply)
+    StopHorizontalWallrun(ply)
+end
+
+local function OnMoveFlag(ply, flag, payload)
+    if flag == 'low_climb_end' then
+        StopLowClimb(ply)
+    elseif flag == 'high_climb_end' then
+        StopHighClimb(ply)
+    elseif flag == 'vault_end' then
+        StopVault(ply)
+    elseif flag == 'double_vault_end' then
+        StopDoubleVaultState2(ply)
+    elseif flag == 'vertical_wallrun_end' then
+        StopVerticalWallrun(ply)
+    elseif flag == 'horizontal_wallrun_end' then
+        StopHorizontalWallrun(ply)
+    elseif flag == 'wallrun_interrupt' then
+        InterruptVerticalWallrun(ply)
+        InterruptHorizontalWallrun(ply)
+    elseif flag == 'vertical_wallrun_interrupt' then
+        InterruptVerticalWallrun(ply)
+    elseif flag == 'horizontal_wallrun_interrupt' then
+        InterruptHorizontalWallrun(ply)
+    elseif flag == 'vertical_wallrun_step' then
+        EmitEffectSound(ply, upar_effect_vertical_wallrun_footstep_sound:GetString())
+    elseif flag == 'horizontal_wallrun_step' then
+        EmitEffectSound(ply, upar_effect_horizontal_wallrun_footstep_sound:GetString())
+    elseif flag == 'vertical_wallrun_jump' then
+        if SERVER then ply:ViewPunch(Angle(5, 0, 0)) end
+        EmitEffectSound(ply, upar_effect_vertical_wallrun_clean_sound:GetString())
+        StopVerticalWallrun(ply)
+    elseif flag == 'horizontal_wallrun_jump' then
+        if SERVER then ply:ViewPunch(Angle(5, 0, 0)) end
+        EmitEffectSound(ply, upar_effect_horizontal_wallrun_clean_sound:GetString())
+        StopHorizontalWallrun(ply)
+    elseif flag == 'low_climb_start' then
+        StartLowClimb(ply, payload)
+    elseif flag == 'high_climb_start' then
+        StartHighClimb(ply, payload)
+    elseif flag == 'vault_start' then
+        StartVault(ply, payload)
+    elseif flag == 'double_vault_state1' then
+        StartDoubleVaultState1(ply, payload)
+    elseif flag == 'double_vault_state2' then
+        StopDoubleVaultState1(ply)
+        StartDoubleVaultState2(ply, payload)
+    elseif flag == 'vertical_wallrun_start' then
+        StartVerticalWallrun(ply, payload)
+    elseif flag == 'horizontal_wallrun_start' then
+        StartHorizontalWallrun(ply, payload)
     end
-
-    if flag == 'horizontal_wallrun_step' then
-        local sound = upar_effect_horizontal_wallrun_footstep_sound:GetString()
-        if sound ~= '' then ply:EmitSound(sound) end
-        return
-    end
-
-    if flag == 'vertical_wallrun' then
-        local sound = upar_effect_vertical_wallrun_footstep_sound:GetString()
-        if sound ~= '' then ply:EmitSound(sound) end
-    end
-
-    local payload
-    if flag == 'horizontal_wallrun' then
-        local sound = upar_effect_horizontal_wallrun_footstep_sound:GetString()
-        if sound ~= '' then ply:EmitSound(sound) end
-
-        local nodes = move and move.timeline and move.timeline.nodes
-        if nodes and nodes[2] then
-            local along = nodes[2].pos - nodes[1].pos
-            along.z = 0
-            along:Normalize()
-
-            local right = ply:EyeAngles():Right()
-            right.z = 0
-            right:Normalize()
-
-            local direction = along:Dot(right) >= 0 and 1 or -1
-            payload = {
-                along = along,
-                roll = direction * UPar.EffectMAGIC.HORIZONTAL_WALLRUN_ROLL,
-            }
-        end
-    end
-
-    if flag == 'vertical_wallrun_clean' then
-        ply:ViewPunch(Angle(5, 0, 0))
-        StopEffect(ply, 'jump')
-        local sound = upar_effect_vertical_wallrun_clean_sound:GetString()
-        if sound ~= '' then ply:EmitSound(sound) end
-        return
-    end
-
-    if flag == 'horizontal_wallrun_clean' then
-        ply:ViewPunch(Angle(5, 0, 0))
-        StopEffect(ply, 'jump')
-        local sound = upar_effect_horizontal_wallrun_clean_sound:GetString()
-        if sound ~= '' then ply:EmitSound(sound) end
-        return
-    end
-
-    StartEffect(ply, flag, payload)
 end
 
 hook.Add('UParMoveFlag', 'upar.effect.flag', OnMoveFlag)
-hook.Add('PlayerDeath', 'upar.effect.clear', function(ply) StopEffect(ply, 'end') end)
-hook.Add('PlayerSpawn', 'upar.effect.clear', function(ply) StopEffect(ply, 'end') end)
-hook.Add('PlayerDisconnect', 'upar.effect.clear', function(ply) StopEffect(ply, 'end') end)
-
-if CLIENT then
-    net.Receive('UParEffect', function()
-        local ply = LocalPlayer()
-        local effectName = net.ReadString()
-        local endtype = net.ReadString()
-
-        if effectName == '' then
-            ClearEffect(ply, endtype)
-        else
-            local payload
-            if net.ReadBool() then
-                payload = {
-                    along = net.ReadVector(),
-                    roll = net.ReadFloat(),
-                }
-            end
-            PlayEffect(ply, effectName, payload)
-        end
-    end)
-end
-
-
+hook.Add('PlayerDeath', 'upar.effect.clear', function(ply) StopAllEffects(ply) end)
+hook.Add('PlayerSpawn', 'upar.effect.clear', function(ply) StopAllEffects(ply) end)
+hook.Add('PlayerDisconnect', 'upar.effect.clear', function(ply) StopAllEffects(ply) end)

@@ -30,7 +30,7 @@ UPar.MotionMAGIC = {
     DEBUG_TTL = 2,
     DEBUG_STEPS = 32,
     DEBUG_CROSS_SIZE = 8,
-    CLIENT_TIMEOUT_MARGIN = 1,
+    CLIENT_TIMEOUT_MARGIN = 0.5,
     LOCK_HARD_TIMEOUT = 30,
     PENDING_TIMEOUT = 0.5,
 }
@@ -234,12 +234,33 @@ local function IsDev()
     return c ~= nil and c:GetInt() > 0
 end
 
-local upar_safe_mode = CreateConVar(
-    'upar_safe_mode', '0',
-    { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
-)
-
 if SERVER then util.AddNetworkString(NET) end
+
+local EVENT_NET = 'UParMoveFlagEvent'
+if SERVER then util.AddNetworkString(EVENT_NET) end
+
+function UPar.EmitMoveFlag(ply, flag, payload)
+    if not isstring(flag) then return end
+
+    hook.Run('UParMoveFlag', ply, flag, payload)
+
+    if SERVER and IsValid(ply) then
+        net.Start(EVENT_NET)
+        net.WriteString(flag)
+        net.WriteBool(payload ~= nil)
+        if payload then net.WriteTable(payload) end
+        net.Send(ply)
+    end
+end
+
+if CLIENT then
+    net.Receive(EVENT_NET, function()
+        local flag = net.ReadString()
+        local payload
+        if net.ReadBool() then payload = net.ReadTable() end
+        hook.Run('UParMoveFlag', LocalPlayer(), flag, payload)
+    end)
+end
 
 if SERVER then
     local function SendArm(ply, id, addKeys, removeKeys, duration)
@@ -266,8 +287,8 @@ if SERVER then
         net.Send(ply)
     end
 
-    local function FireFlag(ply, node, index, move)
-        if node.flag then hook.Run('UParMoveFlag', ply, node.flag, index, node, move) end
+    local function FireFlag(ply, node)
+        if node.flag then UPar.EmitMoveFlag(ply, node.flag, node.payload) end
     end
 
     -- 收尾: running 恢复 movetype, 统一解除输入接管. 幂等.
@@ -312,7 +333,7 @@ if SERVER then
         ply:SetVelocity(vector_origin)
         if node1.movetype then ply:SetMoveType(node1.movetype) end
 
-        FireFlag(ply, node1, 1, move)
+        FireFlag(ply, node1)
     end
 
     local function Step(move, mv)
@@ -343,7 +364,7 @@ if SERVER then
             end
             if node.movetype then ply:SetMoveType(node.movetype) end
             SendKeys(ply, node.addKeys or 0, node.removeKeys or 0)
-            FireFlag(ply, node, move.nodeIndex, move)
+            FireFlag(ply, node)
         end
 
         if t >= timeline.Duration then
@@ -384,16 +405,9 @@ if SERVER then
         }
         ply.upar_motion = move
 
-        if upar_safe_mode:GetBool() then
-            if IsDev() then
-                print(string.format('[UPar] motion safe mode id=%d', id))
-            end
-            BeginMove(move)
-        else
-            SendArm(ply, id, node1.addKeys or 0, node1.removeKeys or 0, timeline.Duration)
-            if IsDev() then
-                print(string.format('[UPar] motion arm id=%d', id))
-            end
+        SendArm(ply, id, node1.addKeys or 0, node1.removeKeys or 0, timeline.Duration)
+        if IsDev() then
+            print(string.format('[UPar] motion arm id=%d', id))
         end
 
         return move
@@ -645,10 +659,9 @@ if SERVER then
         end
     end
 
-    local function PrintFlag(ply, name, index)
-        local node = index and (' @ node ' .. index) or ''
-        print(string.format('[UPar] flag "%s"%s (%s)',
-            name, node, IsValid(ply) and ply:Nick() or '?'))
+    local function PrintFlag(ply, name)
+        print(string.format('[UPar] flag "%s" (%s)',
+            name, IsValid(ply) and ply:Nick() or '?'))
     end
 
     local function SyncDebugDraw()

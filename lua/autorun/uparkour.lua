@@ -3,7 +3,7 @@
 -- 运动曲线与运行逻辑见 autorun/uparkour_motion.lua, 它依赖本文件先加载.
 
 UPar = UPar or {}
-UPar.Version = '2.5.1 Reupload'
+UPar.Version = '2.5.2 Reupload'
 UPar.ObstacleEntityClassFilter = UPar.ObstacleEntityClassFilter or {
 
 
@@ -23,12 +23,14 @@ local FIELDS = {
     addKeys  = { 'number',  nil,   '进入该节点时按下的按键位掩码(nil = 清空)' },
     removeKeys = { 'number', nil,  '进入该节点时释放的按键位掩码(nil = 清空)' },
     exitvel  = { 'vector',  nil,   '尾节点出口速度覆盖(nil = 由相邻节点几何推导)' },
+    payload  = { 'table',   nil,   '到达该节点并发送 flag 时携带的附加数据(nil = 无)' },
 }
 
 local VALIDATORS = {
     vector  = function(v) return isvector(v) end,
     number  = function(v) return IsFinite(v) end,
     string  = function(v) return isstring(v) end,
+    table   = function(v) return istable(v) end,
 }
 
 local Node = {}

@@ -47,7 +47,7 @@ VManip:RegisterAnim('horizontalwallrun_YongLi',
         ['lerp_curve']=0.8,
         ['speed']=1,
         ['startcycle']=0.15,
-        ['holdtime']=0.27
+        ['holdtime']=0.30
     }
 )
 

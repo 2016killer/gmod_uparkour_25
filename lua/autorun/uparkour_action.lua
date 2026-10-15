@@ -221,7 +221,11 @@ local function BuildClimbMove(ply, data, direction, effect)
             pos = startPos,
             speed = speed,
             movetype = MOVETYPE_NOCLIP,
-            flag = effect,
+            flag = effect .. '_start',
+            payload = {
+                landing = data.landing,
+                normal = data.obstacleNormal,
+            },
             addKeys = addKeys,
             removeKeys = removeKeys,
             delay = effect == 'high_climb' and UPar.ActionMAGIC.HIGHCLIMB_DELAY or 0,
@@ -229,7 +233,7 @@ local function BuildClimbMove(ply, data, direction, effect)
         UPar.Node{
             pos = endPos,
             speed = 0,
-            flag = 'move_end',
+            flag = effect .. '_end',
             addKeys = addKeys,
             removeKeys = removeKeys,
         },
@@ -260,7 +264,12 @@ local function BuildVaultMove(ply, data, direction, effect)
             pos = startPos,
             speed = speed,
             movetype = MOVETYPE_NOCLIP,
-            flag = effect,
+            flag = effect .. '_start',
+            payload = {
+                landing = data.landing,
+                vaultLanding = data.vaultLanding,
+                normal = data.obstacleNormal,
+            },
             removeKeys = removeKeys,
         },
         UPar.Node{
@@ -271,7 +280,7 @@ local function BuildVaultMove(ply, data, direction, effect)
         UPar.Node{
             pos = endPos,
             speed = speed,
-            flag = 'move_end',
+            flag = 'vault_end',
             exitvel = exitvel,
             removeKeys = removeKeys,
         },
@@ -316,6 +325,10 @@ local function BuildDoubleVaultMove(ply, data, direction, effect)
             speed = speed_state1,
             movetype = MOVETYPE_NOCLIP,
             flag = 'double_vault_state1',
+            payload = {
+                landing = data.landing,
+                normal = data.obstacleNormal,
+            },
             removeKeys = removeKeys,
             delay = UPar.ActionMAGIC.HIGHCLIMB_DELAY,
         },
@@ -323,6 +336,10 @@ local function BuildDoubleVaultMove(ply, data, direction, effect)
             pos = climbPoint,
             speed = climbExitSpeed,
             flag = 'double_vault_state2',
+            payload = {
+                vaultLanding = data.vaultLanding,
+                normal = data.obstacleNormal,
+            },
             removeKeys = removeKeys,
         },
         UPar.Node{
@@ -333,7 +350,7 @@ local function BuildDoubleVaultMove(ply, data, direction, effect)
         UPar.Node{
             pos = endPos,
             speed = speed_state2,
-            flag = 'move_end',
+            flag = 'double_vault_end',
             exitvel = exitvel,
             removeKeys = removeKeys,
         },
@@ -359,7 +376,12 @@ local function BuildVerticalWallrunMove(ply, data)
             pos = startPos,
             speed = segmentStartSpeed,
             movetype = MOVETYPE_WALK,
-            flag = 'vertical_wallrun',
+            flag = 'vertical_wallrun_start',
+            payload = {
+                normal = data.normal,
+                along = data.along,
+                contactPos = data.contactPos,
+            },
         },
     }
 
@@ -396,7 +418,7 @@ local function BuildVerticalWallrunMove(ply, data)
     nodes[#nodes + 1] = UPar.Node{
         pos = hoverPos - up * UPar.ActionMAGIC.VERTICAL_WALLRUN_HOVER_DISTANCE,
         speed = UPar.ActionMAGIC.VERTICAL_WALLRUN_HOVER_SPEED,
-        flag = 'move_end',
+        flag = 'vertical_wallrun_end',
     }
 
     return nodes
@@ -422,7 +444,13 @@ local function BuildHorizontalWallrunMove(ply, data)
             pos = startPos,
             speed = speed,
             movetype = MOVETYPE_WALK,
-            flag = 'horizontal_wallrun',
+            flag = 'horizontal_wallrun_start',
+            payload = {
+                normal = data.normal,
+                along = direction,
+                side = data.side,
+                contactPos = data.contactPos,
+            },
         },
     }
 
@@ -435,7 +463,7 @@ local function BuildHorizontalWallrunMove(ply, data)
         nodes[#nodes + 1] = UPar.Node{
             pos = to,
             speed = speed,
-            flag = isLast and 'move_end' or 'horizontal_wallrun_step',
+            flag = isLast and 'horizontal_wallrun_end' or 'horizontal_wallrun_step',
         }
     end
 
@@ -649,7 +677,7 @@ local function TryMove(ply, cmd, detectMask)
         if bit.band(detectMask, DETECT_PARKOUR) ~= 0 then
             local nodes, action = GetParkourNodes(ply, cmd)
             if nodes then
-                hook.Run('UParMoveFlag', ply, 'wallrun_interrupt')
+                UPar.EmitMoveFlag(ply, 'wallrun_interrupt')
                 PublishMove(ply, nodes, action, UPar.MotionMode.TELEPORT)
             end
         end
@@ -717,13 +745,13 @@ local function UpdateVerticalWallrunState(ply, cmd, mv, move)
         local exitvel = direction * jumpSpeed
         UPar.AbortMove(ply)
         if mv then mv:SetVelocity(exitvel) end
-        hook.Run('UParMoveFlag', ply, 'vertical_wallrun_clean')
+        UPar.EmitMoveFlag(ply, 'vertical_wallrun_jump')
         return true
     end
 
     if ShouldInterruptVerticalWallrun(ply, cmd) then
         UPar.AbortMove(ply)
-        hook.Run('UParMoveFlag', ply, 'vertical_wallrun_interrupt')
+        UPar.EmitMoveFlag(ply, 'vertical_wallrun_interrupt')
         return true
     end
 
@@ -762,13 +790,13 @@ local function UpdateHorizontalWallrunState(ply, cmd, mv, move)
         local exitvel = GetFlatViewDirection(ply) * horizontalSpeed + Vector(0, 0, verticalSpeed)
         UPar.AbortMove(ply)
         if mv then mv:SetVelocity(exitvel) end
-        hook.Run('UParMoveFlag', ply, 'horizontal_wallrun_clean')
+        UPar.EmitMoveFlag(ply, 'horizontal_wallrun_jump')
         return true
     end
 
     if ShouldInterruptHorizontalWallrun(ply, cmd, move, data) then
         UPar.AbortMove(ply)
-        hook.Run('UParMoveFlag', ply, 'horizontal_wallrun_interrupt')
+        UPar.EmitMoveFlag(ply, 'horizontal_wallrun_interrupt')
         return true
     end
 
@@ -787,7 +815,7 @@ local function UpdateWallrunState(ply, cmd, mv)
     if not data then
         UPar.AbortMove(ply)
         if mv then mv:SetVelocity(vector_origin) end
-        hook.Run('UParMoveFlag', ply, 'wallrun_interrupt')
+        UPar.EmitMoveFlag(ply, 'wallrun_interrupt')
         return true
     end
 

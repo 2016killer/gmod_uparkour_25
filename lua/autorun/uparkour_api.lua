@@ -67,6 +67,8 @@
 --     当前动作候选已经通过核心基础条件，并且轮到它参与优先级判定时调用。
 --     如果被否决，核心会继续尝试更低优先级的动作。
 --
+--     需要读取当前旧 move 时，由开发者自行读取 ply.upar_motion。
+--
 
 
 -- ===============================UParActionNodes===============================
@@ -127,6 +129,13 @@
 --     多个 UParActionNodes 同时注册时，第一个返回非 nil 的钩子会终止后续调用，
 --     只有返回 table 才会替换 nodes。不要让多个插件同时接管同一动作节点。
 --
+-- 警告：
+--     UParActionNodes 是危险钩子，它会直接替换整套运动节点。
+--     返回 nodes 后，节点、flag、payload、运动生命周期和特效生命周期
+--     全部由开发者自己负责。
+--     核心不会校验、修复、补默认值或清理自定义 flag。
+--     开发者可以保留核心 flag，也可以完全使用自己的 flag。
+--
 
 
 -- ===============================UParMoveFlag===============================
@@ -137,41 +146,82 @@
 --     它不是动作权限检查。
 --
 -- 运行端：
---     服务端
+--     服务端和客户端
 --
 -- 签名：
---     hook.Add('UParMoveFlag', '唯一名称', function(ply, flag, index, node, move)
+--     hook.Add('UParMoveFlag', '唯一名称', function(ply, flag, payload)
 --     end)
 --
 -- 参数：
 --     ply        Player
 --     flag       string，节点 flag 或手动动作 flag
---     index      number 或 nil，运动节点触发时为节点索引
---     node       UPar.Node 或 nil，运动节点触发时为当前节点
---     move       table 或 nil，当前运动状态
+--     payload    table 或 nil，随 flag 发送的附加数据
 --
 -- 注意：
---     手动动作事件可能只传入 (ply, flag)，
---     因此 index、node、move 都可能为 nil，使用前必须检查。
+--     本钩子由核心统一分发，开发者只需要 hook.Add 监听。
+--     payload 是只读数据，可能为 nil。
+--     不要修改 payload，也不要调用 hook.Run('UParMoveFlag') 自己发送事件。
+--     节点事件的数据来自 node.payload，手动事件的数据由 action 提供。
+--     服务端和客户端收到相同的 flag 与 payload。
+--     node、move、timeline 不会作为 payload 传递，监听者不应依赖这些内部对象。
 --
---     当 move 存在时，move.action 表示当前动作名称。
---     node 和 move 只读，不要修改。
+-- 示例：
+--     horizontal_wallrun payload = {
+--         along = Vector,
+--         side = 'left' 或 'right',
+--     }
+--
+-- 起始 flag payload：
+--     low_climb_start / high_climb_start:
+--         landing
+--         normal
+--
+--     vault_start:
+--         landing
+--         vaultLanding
+--         normal
+--
+--     double_vault_state1:
+--         landing
+--         normal
+--
+--     double_vault_state2:
+--         vaultLanding
+--         normal
+--
+--     vertical_wallrun_start:
+--         normal
+--         along
+--         contactPos
+--
+--     horizontal_wallrun_start:
+--         normal
+--         along
+--         side
+--         contactPos
+--
+-- 过程、结束、中断和跳跃 flag 当前不带 payload。
 --
 -- 当前内置的节点 flag：
---     low_climb
---     high_climb
---     vault
+--     low_climb_start
+--     high_climb_start
+--     vault_start
 --     double_vault_state1
 --     double_vault_state2
---     vertical_wallrun
+--     vertical_wallrun_start
 --     vertical_wallrun_step
---     horizontal_wallrun
+--     horizontal_wallrun_start
 --     horizontal_wallrun_step
---     move_end
+--     low_climb_end
+--     high_climb_end
+--     vault_end
+--     double_vault_end
+--     vertical_wallrun_end
+--     horizontal_wallrun_end
 --
 -- 当前内置的手动 flag：
 --     wallrun_interrupt
 --     vertical_wallrun_interrupt
---     vertical_wallrun_clean
+--     vertical_wallrun_jump
 --     horizontal_wallrun_interrupt
---     horizontal_wallrun_clean
+--     horizontal_wallrun_jump
