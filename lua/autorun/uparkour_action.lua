@@ -156,16 +156,16 @@ local upar_trigger_speed_comp_factor = CreateConVar(
     'upar_trigger_speed_comp_factor', '3', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_lowclimb_trigger_speed_comp = CreateConVar(
-    'upar_lowclimb_trigger_speed_comp', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+    'upar_lowclimb_trigger_speed_comp', '0.5', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_highclimb_trigger_speed_comp = CreateConVar(
-    'upar_highclimb_trigger_speed_comp', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+    'upar_highclimb_trigger_speed_comp', '0.5', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_vault_trigger_speed_comp = CreateConVar(
-    'upar_vault_trigger_speed_comp', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+    'upar_vault_trigger_speed_comp', '1.5', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_doublevault_trigger_speed_comp = CreateConVar(
-    'upar_doublevault_trigger_speed_comp', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+    'upar_doublevault_trigger_speed_comp', '0.5', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 
 if not SERVER then return end
@@ -239,7 +239,7 @@ local function WithinTriggerDistance(ply, data, effect)
         local speedComp = math.min(rawComp, maxComp)
         distance = distance + speedComp
     end
-    print(effect, distance, obstacleDistance)
+
     return obstacleDistance <= distance
 end
 

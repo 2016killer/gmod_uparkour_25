@@ -40,6 +40,11 @@ hook.Add('PopulateToolMenu', 'upar.menu.motion', function()
                 upar_highclimb_trigger_ratio = '0.278',
                 upar_vault_trigger_ratio = '0.48',
                 upar_doublevault_trigger_ratio = '0.278',
+                upar_trigger_speed_comp_factor = '3',
+                upar_lowclimb_trigger_speed_comp = '0.5',
+                upar_highclimb_trigger_speed_comp = '0.5',
+                upar_vault_trigger_speed_comp = '1.5',
+                upar_doublevault_trigger_speed_comp = '0.5',
             }
             ctrl:AddOption('#default', default)
             for k, _ in pairs(default) do
@@ -82,13 +87,13 @@ hook.Add('PopulateToolMenu', 'upar.menu.motion', function()
             panel:NumSlider(language.GetPhrase('#upgui.motion.trigger_speed_comp_factor'),
                 'upar_trigger_speed_comp_factor', 0, 12, 2)
             panel:NumSlider(language.GetPhrase('#upgui.motion.lowclimb_trigger_speed_comp'),
-                'upar_lowclimb_trigger_speed_comp', 0, 4, 2)
+                'upar_lowclimb_trigger_speed_comp', 0, 3, 2)
             panel:NumSlider(language.GetPhrase('#upgui.motion.highclimb_trigger_speed_comp'),
-                'upar_highclimb_trigger_speed_comp', 0, 4, 2)
+                'upar_highclimb_trigger_speed_comp', 0, 3, 2)
             panel:NumSlider(language.GetPhrase('#upgui.motion.vault_trigger_speed_comp'),
-                'upar_vault_trigger_speed_comp', 0, 4, 2)
+                'upar_vault_trigger_speed_comp', 0, 3, 2)
             panel:NumSlider(language.GetPhrase('#upgui.motion.doublevault_trigger_speed_comp'),
-                'upar_doublevault_trigger_speed_comp', 0, 4, 2)
+                'upar_doublevault_trigger_speed_comp', 0, 3, 2)
             panel:ControlHelp(language.GetPhrase('#upgui.motion.trigger_speed_comp.desc'))
 
             panel:ControlHelp('====' .. language.GetPhrase('#upgui.motion.category.speed') .. '====')
