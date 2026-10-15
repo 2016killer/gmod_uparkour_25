@@ -221,7 +221,5 @@
 --
 -- 当前内置的手动 flag：
 --     wallrun_interrupt
---     vertical_wallrun_interrupt
 --     vertical_wallrun_jump
---     horizontal_wallrun_interrupt
 --     horizontal_wallrun_jump

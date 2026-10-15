@@ -720,7 +720,7 @@ local function ShouldRunContinuousDetect(ply)
     return true
 end
 
-local function ShouldInterruptVerticalWallrun(ply, cmd)
+local function ShouldEndVerticalWallrun(ply, cmd)
     local duckDown = cmd and cmd:KeyDown(IN_DUCK) or ply:KeyDown(IN_DUCK)
     if duckDown then return true end
 
@@ -749,16 +749,16 @@ local function UpdateVerticalWallrunState(ply, cmd, mv, move)
         return true
     end
 
-    if ShouldInterruptVerticalWallrun(ply, cmd) then
+    if ShouldEndVerticalWallrun(ply, cmd) then
         UPar.AbortMove(ply)
-        UPar.EmitMoveFlag(ply, 'vertical_wallrun_interrupt')
+        UPar.EmitMoveFlag(ply, 'vertical_wallrun_end')
         return true
     end
 
     return false
 end
 
-local function ShouldInterruptHorizontalWallrun(ply, cmd, move, data)
+local function ShouldEndHorizontalWallrun(ply, cmd, move, data)
     local duckDown = cmd and cmd:KeyDown(IN_DUCK) or ply:KeyDown(IN_DUCK)
     if duckDown or ply:Crouching() then return true end
     if move.nodeIndex > 1 and ply:OnGround() then return true end
@@ -794,9 +794,9 @@ local function UpdateHorizontalWallrunState(ply, cmd, mv, move)
         return true
     end
 
-    if ShouldInterruptHorizontalWallrun(ply, cmd, move, data) then
+    if ShouldEndHorizontalWallrun(ply, cmd, move, data) then
         UPar.AbortMove(ply)
-        UPar.EmitMoveFlag(ply, 'horizontal_wallrun_interrupt')
+        UPar.EmitMoveFlag(ply, 'horizontal_wallrun_end')
         return true
     end
 

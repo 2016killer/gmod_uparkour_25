@@ -393,10 +393,6 @@ local function OnMoveFlag(ply, flag, payload)
     elseif flag == 'wallrun_interrupt' then
         InterruptVerticalWallrun(ply)
         InterruptHorizontalWallrun(ply)
-    elseif flag == 'vertical_wallrun_interrupt' then
-        InterruptVerticalWallrun(ply)
-    elseif flag == 'horizontal_wallrun_interrupt' then
-        InterruptHorizontalWallrun(ply)
     elseif flag == 'vertical_wallrun_step' then
         EmitEffectSound(ply, upar_effect_vertical_wallrun_footstep_sound:GetString())
     elseif flag == 'horizontal_wallrun_step' then
