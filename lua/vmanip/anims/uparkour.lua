@@ -54,11 +54,11 @@ VManip:RegisterAnim('horizontalwallrun_YongLi',
 VManip:RegisterAnim('verticalwallrun',
     {
         ["model"]='mantleanim.mdl',
-        ["lerp_peak"]=1,
-        ["lerp_speed_in"]=12,
-        ["lerp_speed_out"]=12,
+        ["lerp_peak"]=0.4,
+        ["lerp_speed_in"]=2,
+        ["lerp_speed_out"]=2,
         ["lerp_curve"]=1,
-        ["speed"]=3,
+        ["speed"]=2,
         ["cam_ang"]=Angle()
     }
 )

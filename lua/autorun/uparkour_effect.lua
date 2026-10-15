@@ -229,7 +229,6 @@ end
 
 local function StartVerticalWallrun(ply, payload)
     SetWOS(ply, upar_effect_vertical_wallrun_wos_anim:GetString())
-
     if SERVER then
         EmitEffectSound(ply, upar_effect_vertical_wallrun_footstep_sound:GetString())
         EmitEffectSound(ply, upar_effect_vertical_wallrun_sound:GetString())
@@ -239,8 +238,21 @@ local function StartVerticalWallrun(ply, payload)
             VManip:PlayAnim(vmanipAnim)
             if VManip:GetCurrentAnim() == vmanipAnim and IsValid(VManip:GetVMGesture()) then
                 VManip:GetVMGesture().RenderOverride = function(self)
-                    self:SetPos(EyePos() - ply:EyeAngles():Up() * 64)
-                    self:SetAngles(ply:EyeAngles())
+                    local normal = payload and payload.normal or nil
+                    local along = payload and payload.along or nil
+
+                    local newPos
+                    local newAnlge
+                    if isvector(along) and isvector(normal) then
+                        newPos = EyePos() - along * 64
+                        newAnlge = (-normal):Angle()
+                    else
+                        newPos = EyePos() - ply:EyeAngles():Up() * 64
+                        newAnlge = ply:EyeAngles()
+                    end
+
+                    self:SetPos(newPos)
+                    self:SetAngles(newAnlge)
                 end
             end
         end
