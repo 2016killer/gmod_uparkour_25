@@ -18,7 +18,7 @@ hook.Add('PopulateToolMenu', 'upar.menu.key', function()
                 upar_key_doublevault_require_shift = '1',
                 upar_key_block_backstrafe = '1',
                 upar_continuous_detect = '1',
-                upar_continuous_detect_interval = '6',
+                upar_continuous_detect_interval = '3',
             }
             ctrl:AddOption('#default', default)
             for k, _ in pairs(default) do

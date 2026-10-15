@@ -31,6 +31,7 @@ UPar.ActionMAGIC = {
     DIRECTION_CHECK_MIN_SPEED = 200,
     DIE_DOWN_SPEED = 600,
     VAULT_DIE_DOWN_SPEED = 300,
+    TRIGGER_SPEED_COMP_TICKS = 3,
 }
 
 local DETECT_PARKOUR = 1
@@ -46,7 +47,7 @@ local upar_continuous_detect = CreateConVar(
 )
 
 local upar_continuous_detect_interval = CreateConVar(
-    'upar_continuous_detect_interval', '6', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+    'upar_continuous_detect_interval', '3', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 
 local upar_facing_angle_delta = CreateConVar(
@@ -152,6 +153,18 @@ local upar_vault_trigger_ratio = CreateConVar(
 local upar_doublevault_trigger_ratio = CreateConVar(
     'upar_doublevault_trigger_ratio', '0.278', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
+local upar_lowclimb_trigger_speed_comp = CreateConVar(
+    'upar_lowclimb_trigger_speed_comp', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
+local upar_highclimb_trigger_speed_comp = CreateConVar(
+    'upar_highclimb_trigger_speed_comp', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
+local upar_vault_trigger_speed_comp = CreateConVar(
+    'upar_vault_trigger_speed_comp', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
+local upar_doublevault_trigger_speed_comp = CreateConVar(
+    'upar_doublevault_trigger_speed_comp', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
 
 if not SERVER then return end
 
@@ -200,11 +213,32 @@ local function GetTriggerRatio(effect)
     return upar_doublevault_trigger_ratio:GetFloat()
 end
 
+local function GetTriggerSpeedComp(effect)
+    if effect == 'low_climb' then return upar_lowclimb_trigger_speed_comp:GetFloat() end
+    if effect == 'high_climb' then return upar_highclimb_trigger_speed_comp:GetFloat() end
+    if effect == 'vault' then return upar_vault_trigger_speed_comp:GetFloat() end
+    return upar_doublevault_trigger_speed_comp:GetFloat()
+end
+
 local function WithinTriggerDistance(ply, data, effect)
     local mins, maxs = ply:GetCollisionBounds()
     local playerHeight = maxs.z - mins.z
+    local playerWidth = math.max(maxs.x - mins.x, maxs.y - mins.y)
     local distance = playerHeight * GetTriggerRatio(effect)
-    return (data.obstacle.HitPos - ply:GetPos()):Length2D() <= distance
+
+    local toObstacle = data.obstacle.HitPos - ply:GetPos()
+    toObstacle.z = 0
+    local obstacleDistance = toObstacle:Length()
+    if obstacleDistance > 0 then
+        local direction = toObstacle / obstacleDistance
+        local speedToward = math.max(0, ply:GetVelocity():Dot(direction))
+        local rawComp = speedToward * FrameTime() * UPar.ActionMAGIC.TRIGGER_SPEED_COMP_TICKS
+        local maxComp = playerWidth * math.max(0, GetTriggerSpeedComp(effect))
+        local speedComp = math.min(rawComp, maxComp)
+        distance = distance + speedComp
+    end
+    print(effect, distance, obstacleDistance)
+    return obstacleDistance <= distance
 end
 
 local function BuildClimbMove(ply, data, direction, effect)

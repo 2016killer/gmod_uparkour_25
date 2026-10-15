@@ -79,6 +79,15 @@ hook.Add('PopulateToolMenu', 'upar.menu.motion', function()
             panel:NumSlider(language.GetPhrase('#upgui.motion.highclimb_trigger_ratio'), 'upar_highclimb_trigger_ratio', 0, 2.5, 2)
             panel:NumSlider(language.GetPhrase('#upgui.motion.vault_trigger_ratio'), 'upar_vault_trigger_ratio', 0, 2.5, 2)
             panel:NumSlider(language.GetPhrase('#upgui.motion.doublevault_trigger_ratio'), 'upar_doublevault_trigger_ratio', 0, 2.5, 2)
+            panel:NumSlider(language.GetPhrase('#upgui.motion.lowclimb_trigger_speed_comp'),
+                'upar_lowclimb_trigger_speed_comp', 0, 4, 2)
+            panel:NumSlider(language.GetPhrase('#upgui.motion.highclimb_trigger_speed_comp'),
+                'upar_highclimb_trigger_speed_comp', 0, 4, 2)
+            panel:NumSlider(language.GetPhrase('#upgui.motion.vault_trigger_speed_comp'),
+                'upar_vault_trigger_speed_comp', 0, 4, 2)
+            panel:NumSlider(language.GetPhrase('#upgui.motion.doublevault_trigger_speed_comp'),
+                'upar_doublevault_trigger_speed_comp', 0, 4, 2)
+            panel:ControlHelp(language.GetPhrase('#upgui.motion.trigger_speed_comp.desc'))
 
             panel:ControlHelp('====' .. language.GetPhrase('#upgui.motion.category.speed') .. '====')
             panel:ControlHelp(language.GetPhrase('#upgui.motion.speed_override.desc'))
