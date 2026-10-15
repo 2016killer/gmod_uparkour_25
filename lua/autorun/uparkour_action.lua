@@ -16,7 +16,10 @@ UPar.ActionMAGIC = {
     HORIZONTAL_WALLRUN_JUMP_SPEED_MULTIPLIER = 0.75,
     WALLRUN_LAST_ANGLE_MIN = 80,
 
-    PULSE_APEX = 10,
+    PULSE_APEX_THICK = 10,
+    PULSE_APEX_THIN = 5,
+    PULSE_APEX_DOUBLE = 10,
+    PULSE_THICKNESS_THRESHOLD = 50, -- Source 单位
 
     LOWCLIMB_MIN_HEIGHT = 0.5,
     LOWCLIMB_MAX_HEIGHT = 0.86,
@@ -252,10 +255,15 @@ local function BuildVaultMove(ply, data, direction, effect)
     end
     local removeKeys = bit.bor(IN_DUCK, IN_JUMP)
 
+    local thickness = data.thickness or math.huge
+    local apexOffset = thickness < UPar.ActionMAGIC.PULSE_THICKNESS_THRESHOLD
+        and UPar.ActionMAGIC.PULSE_APEX_THIN
+        or UPar.ActionMAGIC.PULSE_APEX_THICK
+
     local apex = Vector(
         data.landing.x,
         data.landing.y,
-        data.vaultLanding.z + UPar.ActionMAGIC.PULSE_APEX
+        data.vaultLanding.z + apexOffset
     )
     local exitvel = direction * speed
 
@@ -281,7 +289,7 @@ local function BuildVaultMove(ply, data, direction, effect)
             pos = endPos,
             speed = speed,
             flag = 'vault_end',
-            exitvel = exitvel,
+            -- exitvel = exitvel,
             removeKeys = removeKeys,
         },
     }
@@ -293,7 +301,7 @@ local function BuildDoubleVaultMove(ply, data, direction, effect)
     local apex = Vector(
         (climbPoint.x + data.vaultLanding.x) * 0.5,
         (climbPoint.y + data.vaultLanding.y) * 0.5,
-        data.vaultLanding.z + UPar.ActionMAGIC.PULSE_APEX
+        data.vaultLanding.z + UPar.ActionMAGIC.PULSE_APEX_DOUBLE
     )
     local endPos = data.vaultLanding
 
