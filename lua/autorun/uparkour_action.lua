@@ -21,7 +21,7 @@ UPar.ActionMAGIC = {
     PULSE_APEX_DOUBLE = 10,
     PULSE_THICKNESS_THRESHOLD = 50, -- Source 单位
 
-    LOWCLIMB_MIN_HEIGHT = 0.5,
+    LOWCLIMB_MIN_HEIGHT = 0.4,
     LOWCLIMB_MAX_HEIGHT = 0.86,
     HIGHCLIMB_MIN_HEIGHT = 0.87,
     HIGHCLIMB_MAX_HEIGHT = 1.2,
@@ -237,6 +237,11 @@ local function WithinTriggerDistance(ply, data, effect)
         local rawComp = speedToward * FrameTime() * math.max(0, upar_trigger_speed_comp_factor:GetFloat())
         local maxComp = playerWidth * math.max(0, GetTriggerSpeedComp(effect))
         local speedComp = math.min(rawComp, maxComp)
+
+        if IsDev() then 
+            print(string.format('[UPar] obsDist=%f, triggerDistBase=%f, speedComp=%f', obstacleDistance, distance, speedComp))
+        end
+
         distance = distance + speedComp
     end
 
@@ -649,6 +654,15 @@ local function GetParkourNodes(ply, cmd)
         and heightRatio <= UPar.ActionMAGIC.LOWCLIMB_MAX_HEIGHT
     local highHeight = heightRatio >= UPar.ActionMAGIC.HIGHCLIMB_MIN_HEIGHT
         and heightRatio <= UPar.ActionMAGIC.HIGHCLIMB_MAX_HEIGHT
+
+    if IsDev() then 
+        print(string.format('[UPar] heightRatio=%.2f LOWCLIMB_MIN_HEIGHT=%.2f LOWCLIMB_MAX_HEIGHT=%.2f', heightRatio, UPar.ActionMAGIC.LOWCLIMB_MIN_HEIGHT, UPar.ActionMAGIC.LOWCLIMB_MAX_HEIGHT))
+    end
+
+    if IsDev() then 
+        print(string.format('[UPar] heightRatio=%.2f HIGHCLIMB_MIN_HEIGHT=%.2f HIGHCLIMB_MAX_HEIGHT=%.2f', heightRatio, UPar.ActionMAGIC.HIGHCLIMB_MIN_HEIGHT, UPar.ActionMAGIC.HIGHCLIMB_MAX_HEIGHT))
+    end
+
 
     local lowClimbCondition = upar_lowclimb_enabled:GetBool()
         and totalCondition and climbGeometry and lowHeight
