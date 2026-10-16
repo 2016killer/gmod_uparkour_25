@@ -57,33 +57,33 @@ local upar_speed_use_velocity = CreateConVar(
     'upar_speed_use_velocity', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_speed_climb = CreateConVar(
-    'upar_speed_climb', '0', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+    'upar_speed_climb', '200', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_speed_vault = CreateConVar(
-    'upar_speed_vault', '0', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+    'upar_speed_vault', '200', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_speed_doublevault_state_1 = CreateConVar(
-    'upar_speed_doublevault_state_1', '0',
+    'upar_speed_doublevault_state_1', '200',
     { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_speed_doublevault_state_2 = CreateConVar(
-    'upar_speed_doublevault_state_2', '0',
+    'upar_speed_doublevault_state_2', '200',
     { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_speed_vertical_wallrun = CreateConVar(
-    'upar_speed_vertical_wallrun', '0',
+    'upar_speed_vertical_wallrun', '300',
     { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_speed_horizontal_wallrun = CreateConVar(
-    'upar_speed_horizontal_wallrun', '0',
+    'upar_speed_horizontal_wallrun', '300',
     { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_speed_vertical_wallrun_jump = CreateConVar(
-    'upar_speed_vertical_wallrun_jump', '0',
+    'upar_speed_vertical_wallrun_jump', '300',
     { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_speed_horizontal_wallrun_jump = CreateConVar(
-    'upar_speed_horizontal_wallrun_jump', '0',
+    'upar_speed_horizontal_wallrun_jump', '300',
     { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_wallrun_horizontal_angle = CreateConVar(

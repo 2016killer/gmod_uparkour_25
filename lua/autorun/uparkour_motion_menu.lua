@@ -15,48 +15,6 @@ hook.Add('PopulateToolMenu', 'upar.menu.motion', function()
                 upar_speed_angle_delta = '120',
                 upar_speed_use_velocity = '1',
                 upar_crouch_block = '0',
-                upar_speed_climb = '0',
-                upar_speed_vault = '0',
-                upar_speed_doublevault_state_1 = '0',
-                upar_speed_doublevault_state_2 = '0',
-                upar_speed_vertical_wallrun = '0',
-                upar_vertical_wallrun_height_ratio = '1.4',
-                upar_speed_vertical_wallrun_jump = '0',
-                upar_speed_horizontal_wallrun = '0',
-                upar_horizontal_wallrun_duration = '1',
-                upar_speed_horizontal_wallrun_jump = '0',
-                upar_wallrun_vertical_angle = '40',
-                upar_wallrun_horizontal_angle = '5',
-                upar_obstacle_ragdoll = '1',
-                upar_obstacle_character = '1',
-                upar_obstacle_require_frozen = '0',
-                upar_lowclimb_enabled = '1',
-                upar_highclimb_enabled = '1',
-                upar_vault_enabled = '1',
-                upar_doublevault_enabled = '1',
-                upar_lowclimb_min_height = '0.4',
-                upar_lowclimb_max_height = '0.86',
-                upar_highclimb_min_height = '0.87',
-                upar_highclimb_max_height = '1.2',
-                upar_vertical_wallrun_enabled = '1',
-                upar_horizontal_wallrun_enabled = '1',
-                upar_lowclimb_trigger_ratio = '0.278',
-                upar_highclimb_trigger_ratio = '0.278',
-                upar_vault_trigger_ratio = '0.48',
-                upar_doublevault_trigger_ratio = '0.278',
-                upar_trigger_speed_comp_factor = '3',
-                upar_lowclimb_trigger_speed_comp = '0.5',
-                upar_highclimb_trigger_speed_comp = '0.5',
-                upar_vault_trigger_speed_comp = '1.5',
-                upar_doublevault_trigger_speed_comp = '0.5',
-            }
-
-            local recommendation = {
-                upar_enabled = '1',
-                upar_facing_angle_delta = '40',
-                upar_speed_angle_delta = '120',
-                upar_speed_use_velocity = '1',
-                upar_crouch_block = '0',
                 upar_speed_climb = '200',
                 upar_speed_vault = '200',
                 upar_speed_doublevault_state_1 = '200',
@@ -94,7 +52,6 @@ hook.Add('PopulateToolMenu', 'upar.menu.motion', function()
             }
 
             ctrl:AddOption('#default', default)
-            ctrl:AddOption('#recommendation', recommendation)
             for k, _ in pairs(default) do
                 ctrl:AddConVar(k)
             end
