@@ -237,22 +237,39 @@ local function StartVerticalWallrun(ply, payload)
         if VManip and vmanipAnim ~= '' then
             VManip:PlayAnim(vmanipAnim)
             if VManip:GetCurrentAnim() == vmanipAnim and IsValid(VManip:GetVMGesture()) then
+                local normal = payload and payload.normal or nil
+                local along = payload and payload.along or nil
+
+                local newPos
+                local newAngle
+                if isvector(along) and isvector(normal) then
+                    newPos = EyePos() - along * 64
+                    newAngle = (-normal):Angle()
+                else
+                    newPos = EyePos() - ply:EyeAngles():Up() * 64
+                    newAngle = ply:EyeAngles()
+                end
+
+                VManip:GetVMGesture():SetPos(newPos)
+                VManip:GetVMGesture():SetAngles(newAngle)
+                VManip:GetVMGesture():SetupBones()
+
                 VManip:GetVMGesture().RenderOverride = function(self)
                     local normal = payload and payload.normal or nil
                     local along = payload and payload.along or nil
 
                     local newPos
-                    local newAnlge
+                    local newAngle
                     if isvector(along) and isvector(normal) then
                         newPos = EyePos() - along * 64
-                        newAnlge = (-normal):Angle()
+                        newAngle = (-normal):Angle()
                     else
                         newPos = EyePos() - ply:EyeAngles():Up() * 64
-                        newAnlge = ply:EyeAngles()
+                        newAngle = ply:EyeAngles()
                     end
 
                     self:SetPos(newPos)
-                    self:SetAngles(newAnlge)
+                    self:SetAngles(newAngle)
                 end
             end
         end
@@ -281,6 +298,23 @@ local function StartHorizontalWallrun(ply, payload)
         if VManip and vmanipAnim ~= '' and payload.side == 'left' then 
             VManip:PlayAnim(vmanipAnim) 
             if VManip:GetCurrentAnim() == vmanipAnim and IsValid(VManip:GetVMGesture()) then
+
+                local along = payload and payload.along or nil
+                local normal = payload and payload.normal or nil
+                local newAngle
+                local newPos
+                if isvector(along) and isvector(normal) then
+                    newAngle = (along - 0.1 * normal):Angle()
+                    newPos = EyePos() - 6 * normal - 6 * along
+                else
+                    newAngle = ply:EyeAngles()
+                    newPos = EyePos()
+                end
+
+                VManip:GetVMGesture():SetPos(newPos)
+                VManip:GetVMGesture():SetAngles(newAngle)
+                VManip:GetVMGesture():SetupBones()
+
                 VManip:GetVMGesture().RenderOverride = function(self)
                     local along = payload and payload.along or nil
                     local normal = payload and payload.normal or nil
