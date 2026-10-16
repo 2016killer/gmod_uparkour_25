@@ -21,10 +21,6 @@ UPar.ActionMAGIC = {
     PULSE_APEX_DOUBLE = 10,
     PULSE_THICKNESS_THRESHOLD = 50, -- Source 单位
 
-    LOWCLIMB_MIN_HEIGHT = 0.4,
-    LOWCLIMB_MAX_HEIGHT = 0.86,
-    HIGHCLIMB_MIN_HEIGHT = 0.87,
-    HIGHCLIMB_MAX_HEIGHT = 1.2,
     HIGHCLIMB_DELAY = 0.1,
 
     DOUBLEVAULT_CLIMB_EXIT_SCALE = 0.2,
@@ -139,6 +135,18 @@ local upar_vertical_wallrun_enabled = CreateConVar(
 local upar_horizontal_wallrun_enabled = CreateConVar(
     'upar_horizontal_wallrun_enabled', '1',
     { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
+local upar_lowclimb_min_height = CreateConVar(
+    'upar_lowclimb_min_height', '0.4', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
+local upar_lowclimb_max_height = CreateConVar(
+    'upar_lowclimb_max_height', '0.86', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
+local upar_highclimb_min_height = CreateConVar(
+    'upar_highclimb_min_height', '0.87', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
+local upar_highclimb_max_height = CreateConVar(
+    'upar_highclimb_max_height', '1.2', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_lowclimb_trigger_ratio = CreateConVar(
     'upar_lowclimb_trigger_ratio', '0.278', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
@@ -650,17 +658,19 @@ local function GetParkourNodes(ply, cmd)
 
     local shiftHeld = cmd and cmd:KeyDown(IN_SPEED) or ply:KeyDown(IN_SPEED)
     local climbGeometry = kind == 'platform' or kind == 'pulse'
-    local lowHeight = heightRatio >= UPar.ActionMAGIC.LOWCLIMB_MIN_HEIGHT
-        and heightRatio <= UPar.ActionMAGIC.LOWCLIMB_MAX_HEIGHT
-    local highHeight = heightRatio >= UPar.ActionMAGIC.HIGHCLIMB_MIN_HEIGHT
-        and heightRatio <= UPar.ActionMAGIC.HIGHCLIMB_MAX_HEIGHT
+    local lowMin = upar_lowclimb_min_height:GetFloat()
+    local lowMax = upar_lowclimb_max_height:GetFloat()
+    local highMin = upar_highclimb_min_height:GetFloat()
+    local highMax = upar_highclimb_max_height:GetFloat()
+    local lowHeight = heightRatio >= lowMin and heightRatio <= lowMax
+    local highHeight = heightRatio >= highMin and heightRatio <= highMax
 
     if IsDev() then 
-        print(string.format('[UPar] heightRatio=%.2f LOWCLIMB_MIN_HEIGHT=%.2f LOWCLIMB_MAX_HEIGHT=%.2f', heightRatio, UPar.ActionMAGIC.LOWCLIMB_MIN_HEIGHT, UPar.ActionMAGIC.LOWCLIMB_MAX_HEIGHT))
+        print(string.format('[UPar] heightRatio=%.2f LOWCLIMB_MIN_HEIGHT=%.2f LOWCLIMB_MAX_HEIGHT=%.2f', heightRatio, lowMin, lowMax))
     end
 
     if IsDev() then 
-        print(string.format('[UPar] heightRatio=%.2f HIGHCLIMB_MIN_HEIGHT=%.2f HIGHCLIMB_MAX_HEIGHT=%.2f', heightRatio, UPar.ActionMAGIC.HIGHCLIMB_MIN_HEIGHT, UPar.ActionMAGIC.HIGHCLIMB_MAX_HEIGHT))
+        print(string.format('[UPar] heightRatio=%.2f HIGHCLIMB_MIN_HEIGHT=%.2f HIGHCLIMB_MAX_HEIGHT=%.2f', heightRatio, highMin, highMax))
     end
 
 

@@ -3,7 +3,7 @@
 -- 运动曲线与运行逻辑见 autorun/uparkour_motion.lua, 它依赖本文件先加载.
 
 UPar = UPar or {}
-UPar.Version = '2.5.2 Reupload'
+UPar.Version = '2.5.3 Reupload'
 UPar.ObstacleEntityClassFilter = UPar.ObstacleEntityClassFilter or {
 
 
