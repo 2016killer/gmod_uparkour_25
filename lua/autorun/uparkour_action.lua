@@ -285,6 +285,7 @@ local function BuildClimbMove(ply, data, direction, effect)
         UPar.Node{
             pos = endPos,
             speed = 0,
+            movetype = MOVETYPE_WALK,
             flag = effect .. '_end',
             addKeys = addKeys,
             removeKeys = removeKeys,
@@ -408,6 +409,7 @@ local function BuildDoubleVaultMove(ply, data, direction, effect)
         UPar.Node{
             pos = endPos,
             speed = speed_state2,
+            movetype = MOVETYPE_WALK,
             flag = 'double_vault_end',
             exitvel = exitvel,
             removeKeys = removeKeys,
