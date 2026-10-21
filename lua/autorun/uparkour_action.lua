@@ -337,6 +337,7 @@ local function BuildVaultMove(ply, data, direction, effect)
         UPar.Node{
             pos = endPos,
             speed = speed,
+            movetype = MOVETYPE_WALK,
             flag = 'vault_end',
             -- exitvel = exitvel,
             removeKeys = removeKeys,

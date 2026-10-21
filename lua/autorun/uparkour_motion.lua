@@ -291,17 +291,24 @@ if SERVER then
         if node.flag then UPar.EmitMoveFlag(ply, node.flag, node.payload) end
     end
 
-    -- 收尾: running 恢复 movetype, 统一解除输入接管. 幂等.
+    local function ApplyNodeMoveType(ply, move, moveType)
+        if moveType == nil then return end
+        if moveType ~= move.restoreMoveType then
+            move.changedMoveType = true
+        end
+        ply:SetMoveType(moveType)
+    end
+
+    -- 收尾: 按需恢复 movetype, 统一解除输入接管. 幂等.
     local function Teardown(move)
         if move.phase == 'stopped' then return end
-        local wasRunning = move.phase == 'running'
         move.phase = 'stopped'
 
         local ply = move.ply
         if ply.upar_motion == move then ply.upar_motion = nil end
         if IsValid(ply) then
-            if wasRunning then
-                ply:SetMoveType(move.prevMoveType or MOVETYPE_WALK)
+            if move.changedMoveType then
+                ply:SetMoveType(move.restoreMoveType or MOVETYPE_WALK)
             end
             SendStop(ply)
         end
@@ -327,11 +334,10 @@ if SERVER then
         local node1 = move.timeline.nodes[1]
         move.startTime = CurTime()
         move.nodeIndex = 1
-        move.prevMoveType = ply:GetMoveType()
         move.phase = 'running'
 
         ply:SetVelocity(vector_origin)
-        if node1.movetype then ply:SetMoveType(node1.movetype) end
+        ApplyNodeMoveType(ply, move, node1.movetype)
 
         FireFlag(ply, node1)
     end
@@ -362,7 +368,7 @@ if SERVER then
             if IsDev() then
                 print(string.format('[UPar] 到达节点 %d (t=%.3f)', move.nodeIndex, t))
             end
-            if node.movetype then ply:SetMoveType(node.movetype) end
+            ApplyNodeMoveType(ply, move, node.movetype)
             SendKeys(ply, node.addKeys or 0, node.removeKeys or 0)
             FireFlag(ply, node)
         end
@@ -390,6 +396,7 @@ if SERVER then
         local old = ply.upar_motion
         if old then AbortMove(old) end
 
+        local restoreMoveType = ply:GetMoveType()
         local node1 = timeline.nodes[1]
         local id = ((ply.upar_motion_id or 0) % 65535) + 1
         ply.upar_motion_id = id
@@ -402,6 +409,8 @@ if SERVER then
             phase = 'pending',
             pendingSince = CurTime(),
             nodeIndex = 1,
+            restoreMoveType = restoreMoveType,
+            changedMoveType = false,
         }
         ply.upar_motion = move
 
