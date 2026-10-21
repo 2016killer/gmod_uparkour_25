@@ -743,6 +743,7 @@ local function TryMove(ply, cmd, detectMask)
 
     local state = GetActionState(ply)
     if state == 'wallrun' then
+        if ply:GetMoveType() ~= MOVETYPE_WALK then return end
         if bit.band(detectMask, DETECT_PARKOUR) ~= 0 then
             local nodes, action = GetParkourNodes(ply, cmd)
             if nodes then
@@ -790,6 +791,8 @@ local function ShouldRunContinuousDetect(ply)
 end
 
 local function ShouldEndVerticalWallrun(ply, cmd)
+    if ply:GetMoveType() ~= MOVETYPE_WALK then return true end
+
     local duckDown = cmd and cmd:KeyDown(IN_DUCK) or ply:KeyDown(IN_DUCK)
     if duckDown then return true end
 
@@ -828,6 +831,8 @@ local function UpdateVerticalWallrunState(ply, cmd, mv, move)
 end
 
 local function ShouldEndHorizontalWallrun(ply, cmd, move, data)
+    if ply:GetMoveType() ~= MOVETYPE_WALK then return true end
+
     local duckDown = cmd and cmd:KeyDown(IN_DUCK) or ply:KeyDown(IN_DUCK)
     if duckDown or ply:Crouching() then return true end
     if move.nodeIndex > 1 and ply:OnGround() then return true end
