@@ -556,6 +556,7 @@ local function GetWallRunNodes(ply, cmd)
     if ply:Crouching() then return end
     local forwardHeld = cmd and cmd:KeyDown(IN_FORWARD) or ply:KeyDown(IN_FORWARD)
     if not forwardHeld then return end
+    if UPar.IsInWater(ply) then return end
 
     local vertical, horizontal = UPar.DetectWallrun(ply)
     local viewDirection = GetFlatViewDirection(ply)

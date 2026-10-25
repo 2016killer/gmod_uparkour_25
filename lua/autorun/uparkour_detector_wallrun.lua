@@ -343,6 +343,18 @@ function UPar.IsWallrunGroundClose(ply)
     return trace.Hit or trace.StartSolid
 end
 
+function UPar.IsInWater(ply)
+    local pos = ply:GetPos()
+    local trace = util.TraceLine({
+        filter = ply,
+        mask = MASK_WATER,
+        start = pos,
+        endpos = pos
+    })
+    return trace.Hit or trace.StartSolid
+end
+
+
 if SERVER then
     concommand.Add('upar_detector_wallrun_test', function(ply)
         if IsValid(ply) and not ply:IsAdmin() then return end
