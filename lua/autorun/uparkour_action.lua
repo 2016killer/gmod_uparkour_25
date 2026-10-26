@@ -102,6 +102,14 @@ local upar_vertical_wallrun_height_ratio = CreateConVar(
     'upar_vertical_wallrun_height_ratio', '1.4',
     { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
+local upar_vertical_wallrun_start_jump_cooldown = CreateConVar(
+    'upar_vertical_wallrun_start_jump_cooldown', '0.2',
+    { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
+local upar_horizontal_wallrun_start_jump_cooldown = CreateConVar(
+    'upar_horizontal_wallrun_start_jump_cooldown', '0.2',
+    { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
 
 local upar_key_vault_require_shift = CreateConVar(
     'upar_key_vault_require_shift', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
@@ -793,6 +801,18 @@ local function ShouldRunContinuousDetect(ply)
     return true
 end
 
+local function IsVerticalWallrunJumpCooldownActive(move)
+    local cooldown = math.max(0, upar_vertical_wallrun_start_jump_cooldown:GetFloat())
+    if cooldown <= 0 or not move or not move.startTime then return false end
+    return CurTime() - move.startTime < cooldown
+end
+
+local function IsHorizontalWallrunJumpCooldownActive(move)
+    local cooldown = math.max(0, upar_horizontal_wallrun_start_jump_cooldown:GetFloat())
+    if cooldown <= 0 or not move or not move.startTime then return false end
+    return CurTime() - move.startTime < cooldown
+end
+
 local function ShouldEndVerticalWallrun(ply, cmd)
     if ply:GetMoveType() ~= MOVETYPE_WALK then return true end
 
@@ -810,7 +830,7 @@ local function UpdateVerticalWallrunState(ply, cmd, mv, move)
     local jumpPressed = jumpDown and not ply.upar_wallrun_jump
     ply.upar_wallrun_jump = jumpDown
 
-    if jumpPressed and move.nodeIndex > 1 then
+    if jumpPressed and move.nodeIndex > 1 and not IsVerticalWallrunJumpCooldownActive(move) then
         local angle = math.rad(UPar.ActionMAGIC.VERTICAL_WALLRUN_JUMP_ANGLE)
         local direction = GetFlatViewDirection(ply) * math.cos(angle) + Vector(0, 0, 1) * math.sin(angle)
         local jumpSpeed = (ply:GetJumpPower() + ply:GetWalkSpeed())
@@ -851,7 +871,7 @@ local function UpdateHorizontalWallrunState(ply, cmd, mv, move)
     local jumpPressed = jumpDown and not ply.upar_wallrun_jump
     ply.upar_wallrun_jump = jumpDown
 
-    if jumpPressed and move.nodeIndex > 1 then
+    if jumpPressed and move.nodeIndex > 1 and not IsHorizontalWallrunJumpCooldownActive(move) then
         local angle = math.rad(UPar.ActionMAGIC.HORIZONTAL_WALLRUN_JUMP_ANGLE)
         local jumpSpeed = (ply:GetJumpPower() + ply:GetWalkSpeed())
             * UPar.ActionMAGIC.HORIZONTAL_WALLRUN_JUMP_SPEED_MULTIPLIER

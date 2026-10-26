@@ -24,6 +24,8 @@ hook.Add('PopulateToolMenu', 'upar.menu.motion', function()
                 upar_speed_vertical_wallrun_jump = '300',
                 upar_speed_horizontal_wallrun = '300',
                 upar_horizontal_wallrun_duration = '1',
+                upar_vertical_wallrun_start_jump_cooldown = '0.2',
+                upar_horizontal_wallrun_start_jump_cooldown = '0.2',
                 upar_speed_horizontal_wallrun_jump = '300',
                 upar_wallrun_vertical_angle = '40',
                 upar_wallrun_horizontal_angle = '5',
@@ -126,8 +128,13 @@ hook.Add('PopulateToolMenu', 'upar.menu.motion', function()
             panel:ControlHelp('====' .. language.GetPhrase('#upgui.motion.category.duration_height') .. '====')
             panel:NumSlider(language.GetPhrase('#upgui.motion.vertical_wallrun_height_ratio'),
                 'upar_vertical_wallrun_height_ratio', 0.1, 3, 2)
+            panel:NumSlider(language.GetPhrase('#upgui.motion.vertical_wallrun_start_jump_cooldown'),
+                'upar_vertical_wallrun_start_jump_cooldown', 0, 1, 2)
             panel:NumSlider(language.GetPhrase('#upgui.motion.horizontal_wallrun_duration'),
                 'upar_horizontal_wallrun_duration', 0.1, 5, 2)
+            panel:NumSlider(language.GetPhrase('#upgui.motion.horizontal_wallrun_start_jump_cooldown'),
+                'upar_horizontal_wallrun_start_jump_cooldown', 0, 1, 2)
+            panel:ControlHelp(language.GetPhrase('#upgui.motion.wallrun_start_jump_cooldown.desc'))
 
             panel:Help('')
             panel:ControlHelp('=========== '.. UPar.Version ..' ===========')
