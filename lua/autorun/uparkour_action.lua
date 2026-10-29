@@ -492,6 +492,20 @@ local function BuildVerticalWallrunMove(ply, data)
     return nodes
 end
 
+local function GetHorizontalWallrunArc(data, elapsed, duration)
+    if duration <= 0 then return 0, 0 end
+
+    local p = math.Clamp(elapsed / duration, 0, 1)
+    local height = UPar.WallrunMAGIC.HORIZONTAL_UP_HEIGHT
+    if data.hasLift then
+        local verticalSpeed = 4 * height * (1 - 2 * p) / duration
+        return 4 * height * p * (1 - p), verticalSpeed
+    end
+
+    local verticalSpeed = -2 * height * p / duration
+    return -height * p * p, verticalSpeed
+end
+
 local function BuildHorizontalWallrunMove(ply, data)
     local startPos = ply:GetPos()
     local direction = data.along
@@ -507,10 +521,12 @@ local function BuildHorizontalWallrunMove(ply, data)
     local segmentCount = duration / UPar.ActionMAGIC.HORIZONTAL_WALLRUN_STEP_INTERVAL
     local loopCount = math.ceil(segmentCount)
     local segmentLength = totalLength / segmentCount
+    local _, startVerticalSpeed = GetHorizontalWallrunArc(data, 0, duration)
+    local startVelocity = direction * speed + Vector(0, 0, startVerticalSpeed)
     local nodes = {
         UPar.Node{
             pos = startPos,
-            speed = speed,
+            speed = startVelocity:Length(),
             movetype = MOVETYPE_WALK,
             flag = 'horizontal_wallrun_start',
             payload = {
@@ -523,15 +539,18 @@ local function BuildHorizontalWallrunMove(ply, data)
     }
 
     for i = 1, loopCount do
-        local to = startPos + direction * math.min(i * segmentLength, totalLength)
-        if data.hasLift then
-            to = to + Vector(0, 0, UPar.WallrunMAGIC.HORIZONTAL_UP_HEIGHT)
-        end
+        local elapsed = math.min(i * UPar.ActionMAGIC.HORIZONTAL_WALLRUN_STEP_INTERVAL, duration)
+        local verticalOffset, verticalSpeed = GetHorizontalWallrunArc(data, elapsed, duration)
+        local to = startPos
+            + direction * math.min(i * segmentLength, totalLength)
+            + Vector(0, 0, verticalOffset)
+        local velocity = direction * speed + Vector(0, 0, verticalSpeed)
         local isLast = i == loopCount
         nodes[#nodes + 1] = UPar.Node{
             pos = to,
-            speed = speed,
+            speed = velocity:Length(),
             flag = isLast and 'horizontal_wallrun_end' or 'horizontal_wallrun_step',
+            exitvel = isLast and velocity or nil,
         }
     end
 
