@@ -99,11 +99,11 @@ local upar_vault_die_down_speed = CreateConVar(
     { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_vertical_wallrun_die_down_speed = CreateConVar(
-    'upar_vertical_wallrun_die_down_speed', '500',
+    'upar_vertical_wallrun_die_down_speed', '300',
     { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_horizontal_wallrun_die_down_speed = CreateConVar(
-    'upar_horizontal_wallrun_die_down_speed', '500',
+    'upar_horizontal_wallrun_die_down_speed', '300',
     { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_horizontal_wallrun_duration = CreateConVar(
