@@ -9,9 +9,7 @@ UPar.ActionMAGIC = {
     VERTICAL_WALLRUN_HOVER_BUFFER_STEP = 6,
     VERTICAL_WALLRUN_JUMP_ANGLE = 45,
     VERTICAL_WALLRUN_JUMP_SPEED_MULTIPLIER = 0.75,
-    VERTICAL_WALLRUN_DIE_DOWN_SPEED = 500,
     HORIZONTAL_WALLRUN_STEP_INTERVAL = 0.2,
-    HORIZONTAL_WALLRUN_DIE_DOWN_SPEED = 500,
     HORIZONTAL_WALLRUN_JUMP_ANGLE = 45,
     HORIZONTAL_WALLRUN_JUMP_SPEED_MULTIPLIER = 0.75,
     WALLRUN_LAST_ANGLE_MIN = 80,
@@ -25,8 +23,6 @@ UPar.ActionMAGIC = {
 
     DOUBLEVAULT_CLIMB_EXIT_SCALE = 0.2,
     DIRECTION_CHECK_MIN_SPEED = 200,
-    DIE_DOWN_SPEED = 600,
-    VAULT_DIE_DOWN_SPEED = 300,
 }
 
 local DETECT_PARKOUR = 1
@@ -92,6 +88,22 @@ local upar_wallrun_horizontal_angle = CreateConVar(
 )
 local upar_wallrun_vertical_angle = CreateConVar(
     'upar_wallrun_vertical_angle', '40',
+    { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
+local upar_die_down_speed = CreateConVar(
+    'upar_die_down_speed', '600',
+    { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
+local upar_vault_die_down_speed = CreateConVar(
+    'upar_vault_die_down_speed', '300',
+    { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
+local upar_vertical_wallrun_die_down_speed = CreateConVar(
+    'upar_vertical_wallrun_die_down_speed', '500',
+    { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
+local upar_horizontal_wallrun_die_down_speed = CreateConVar(
+    'upar_horizontal_wallrun_die_down_speed', '500',
     { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
 local upar_horizontal_wallrun_duration = CreateConVar(
@@ -591,7 +603,7 @@ local function GetWallRunNodes(ply, cmd)
     local verticalSpeed = ply:GetVelocity().z
     local verticalCondition = vertical
         and upar_vertical_wallrun_enabled:GetBool()
-        and verticalSpeed >= -math.abs(UPar.ActionMAGIC.VERTICAL_WALLRUN_DIE_DOWN_SPEED)
+        and verticalSpeed >= -math.abs(upar_vertical_wallrun_die_down_speed:GetFloat())
     if verticalCondition then
         local facingDot = viewDirection:Dot(-vertical.normal)
         verticalCondition = facingDot >= math.cos(math.rad(upar_wallrun_vertical_angle:GetFloat()))
@@ -599,7 +611,7 @@ local function GetWallRunNodes(ply, cmd)
 
     local horizontalCondition = horizontal
         and upar_horizontal_wallrun_enabled:GetBool()
-        and verticalSpeed >= -math.abs(UPar.ActionMAGIC.HORIZONTAL_WALLRUN_DIE_DOWN_SPEED)
+        and verticalSpeed >= -math.abs(upar_horizontal_wallrun_die_down_speed:GetFloat())
     if horizontalCondition then
         local inwardAngle = math.deg(math.atan2(
             viewDirection:Dot(-horizontal.normal),
@@ -676,7 +688,7 @@ local function GetParkourNodes(ply, cmd)
     local verticalSpeed = velocity.z
     local facingDot = direction:Dot(data.obstacleNormal)
     local totalCondition = facingDot <= -math.cos(math.rad(upar_facing_angle_delta:GetInt()))
-    if verticalSpeed < -math.abs(UPar.ActionMAGIC.DIE_DOWN_SPEED) then
+    if verticalSpeed < -math.abs(upar_die_down_speed:GetFloat()) then
         totalCondition = false
     end
     if horizontalSpeed >= UPar.ActionMAGIC.DIRECTION_CHECK_MIN_SPEED then
@@ -714,13 +726,13 @@ local function GetParkourNodes(ply, cmd)
     local vaultCondition = upar_vault_enabled:GetBool()
         and totalCondition and kind == 'pulse' and lowHeight
         and data.vaultLanding ~= nil and forwardHeld
-        and verticalSpeed >= -math.abs(UPar.ActionMAGIC.VAULT_DIE_DOWN_SPEED)
+        and verticalSpeed >= -math.abs(upar_vault_die_down_speed:GetFloat())
         and (not upar_key_vault_require_shift:GetBool() or shiftHeld)
         and WithinTriggerDistance(ply, data, 'vault')
     local doubleVaultCondition = upar_doublevault_enabled:GetBool()
         and totalCondition and kind == 'pulse' and highHeight
         and data.vaultLanding ~= nil and forwardHeld
-        and verticalSpeed >= -math.abs(UPar.ActionMAGIC.VAULT_DIE_DOWN_SPEED)
+        and verticalSpeed >= -math.abs(upar_vault_die_down_speed:GetFloat())
         and (not upar_key_doublevault_require_shift:GetBool() or shiftHeld)
         and WithinTriggerDistance(ply, data, 'double_vault')
 

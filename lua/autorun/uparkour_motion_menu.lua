@@ -29,6 +29,10 @@ hook.Add('PopulateToolMenu', 'upar.menu.motion', function()
                 upar_speed_horizontal_wallrun_jump = '300',
                 upar_wallrun_vertical_angle = '40',
                 upar_wallrun_horizontal_angle = '5',
+                upar_die_down_speed = '600',
+                upar_vault_die_down_speed = '300',
+                upar_vertical_wallrun_die_down_speed = '500',
+                upar_horizontal_wallrun_die_down_speed = '500',
                 upar_obstacle_ragdoll = '1',
                 upar_obstacle_character = '1',
                 upar_obstacle_require_frozen = '0',
@@ -80,6 +84,15 @@ hook.Add('PopulateToolMenu', 'upar.menu.motion', function()
                 'upar_wallrun_vertical_angle', 0, 90, 0)
             panel:NumSlider(language.GetPhrase('#upgui.motion.wallrun_horizontal_angle'),
                 'upar_wallrun_horizontal_angle', 0, 90, 0)
+            panel:NumSlider(language.GetPhrase('#upgui.motion.die_down_speed'),
+                'upar_die_down_speed', 0, 2000, 0)
+            panel:NumSlider(language.GetPhrase('#upgui.motion.vault_die_down_speed'),
+                'upar_vault_die_down_speed', 0, 2000, 0)
+            panel:NumSlider(language.GetPhrase('#upgui.motion.vertical_wallrun_die_down_speed'),
+                'upar_vertical_wallrun_die_down_speed', 0, 2000, 0)
+            panel:NumSlider(language.GetPhrase('#upgui.motion.horizontal_wallrun_die_down_speed'),
+                'upar_horizontal_wallrun_die_down_speed', 0, 2000, 0)
+            panel:ControlHelp(language.GetPhrase('#upgui.motion.die_down_speed.desc'))
             panel:CheckBox(language.GetPhrase('#upgui.motion.crouch_block'), 'upar_crouch_block')
             panel:ControlHelp(language.GetPhrase('#upgui.motion.crouch_block.desc'))
 
