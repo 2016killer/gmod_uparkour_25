@@ -73,7 +73,7 @@ function UPar.IsInWater(ply)
 
     local position = ply:GetPos()
     if bit.band(util.PointContents(position), MASK_WATER) == 0 then return false end
-    print('pos in water')
+
     local groundTrace = util.TraceLine({
         filter = ply,
         mask = MASK_PLAYERSOLID,
@@ -81,7 +81,7 @@ function UPar.IsInWater(ply)
         endpos = position - Vector(0, 0, UPar.DetectorMAGIC.WATER_GROUND_PROBE_DISTANCE),
         collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT,
     })
-    print('in water?', not groundTrace.Hit and not groundTrace.StartSolid)
+
     return not groundTrace.Hit and not groundTrace.StartSolid
 end
 

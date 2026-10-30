@@ -36,7 +36,6 @@ hook.Add('PopulateToolMenu', 'upar.menu.motion', function()
                 upar_obstacle_ragdoll = '1',
                 upar_obstacle_character = '1',
                 upar_obstacle_require_frozen = '0',
-                upar_water_block_parkour = '1',
                 upar_water_block_wallrun = '1',
                 upar_lowclimb_enabled = '1',
                 upar_highclimb_enabled = '1',
@@ -103,7 +102,6 @@ hook.Add('PopulateToolMenu', 'upar.menu.motion', function()
             panel:CheckBox(language.GetPhrase('#upgui.motion.character'), 'upar_obstacle_character')
             panel:CheckBox(language.GetPhrase('#upgui.motion.require_frozen'), 'upar_obstacle_require_frozen')
             panel:ControlHelp(language.GetPhrase('#upgui.motion.require_frozen.desc'))
-            panel:CheckBox(language.GetPhrase('#upgui.motion.water_block_parkour'), 'upar_water_block_parkour')
             panel:CheckBox(language.GetPhrase('#upgui.motion.water_block_wallrun'), 'upar_water_block_wallrun')
 
             panel:ControlHelp('====' .. language.GetPhrase('#upgui.motion.category.trigger_distance') .. '====')
