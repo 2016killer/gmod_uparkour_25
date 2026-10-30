@@ -32,6 +32,7 @@ UPar.DetectorMAGIC = {
     PULSE_DOWN_TARGET  = 0.6,   -- 下探目标距离, × 玩家身高
     GROUND_PROBE_DEPTH = 0.5,   -- 离地探测深度, × 玩家身高
     PULSE_PASS_HEIGHT  = 0.5,   -- 水平通行探针高度, × 蹲姿高度
+    WATER_GROUND_PROBE_DISTANCE = 12, -- 水中向下检测地面的距离, Source 单位
     DEBUG_TTL          = 3,     -- 调试图形持续时间
     DEBUG_POINT_RADIUS = 3,     -- 调试命中点半径
 }
@@ -65,6 +66,23 @@ function UPar.IsObstacleEntity(entity)
     end
 
     return true
+end
+
+function UPar.IsInWater(ply)
+    if not IsValid(ply) then return false end
+
+    local position = ply:GetPos()
+    if bit.band(util.PointContents(position), MASK_WATER) == 0 then return false end
+    print('pos in water')
+    local groundTrace = util.TraceLine({
+        filter = ply,
+        mask = MASK_PLAYERSOLID,
+        start = position,
+        endpos = position - Vector(0, 0, UPar.DetectorMAGIC.WATER_GROUND_PROBE_DISTANCE),
+        collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT,
+    })
+    print('in water?', not groundTrace.Hit and not groundTrace.StartSolid)
+    return not groundTrace.Hit and not groundTrace.StartSolid
 end
 
 local function NormalizeXY(vector)

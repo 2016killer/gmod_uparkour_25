@@ -135,6 +135,14 @@ local upar_key_block_backstrafe = CreateConVar(
 local upar_crouch_block = CreateConVar(
     'upar_crouch_block', '0', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
+local upar_water_block_parkour = CreateConVar(
+    'upar_water_block_parkour', '1',
+    { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
+local upar_water_block_wallrun = CreateConVar(
+    'upar_water_block_wallrun', '1',
+    { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
 
 local upar_lowclimb_enabled = CreateConVar(
     'upar_lowclimb_enabled', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
@@ -588,6 +596,7 @@ local function PublishMove(ply, nodes, action, motionMode)
 end
 
 local function GetWallRunNodes(ply, cmd)
+    if upar_water_block_wallrun:GetBool() and UPar.IsInWater(ply) then return end
     if not upar_vertical_wallrun_enabled:GetBool()
         and not upar_horizontal_wallrun_enabled:GetBool() then
         return
@@ -595,7 +604,6 @@ local function GetWallRunNodes(ply, cmd)
     if ply:Crouching() then return end
     local forwardHeld = cmd and cmd:KeyDown(IN_FORWARD) or ply:KeyDown(IN_FORWARD)
     if not forwardHeld then return end
-    if UPar.IsInWater(ply) then return end
 
     local vertical, horizontal = UPar.DetectWallrun(ply)
     local viewDirection = GetFlatViewDirection(ply)
@@ -673,6 +681,8 @@ local function GetWallRunNodes(ply, cmd)
 end
 
 local function GetParkourNodes(ply, cmd)
+    if upar_water_block_parkour:GetBool() and UPar.IsInWater(ply) then return end
+
     local forwardHeld = cmd and cmd:KeyDown(IN_FORWARD) or ply:KeyDown(IN_FORWARD)
 
     local direction = GetFlatViewDirection(ply)
