@@ -27,14 +27,14 @@ hook.Add('PopulateToolMenu', 'upar.menu.key', function()
             panel:AddPanel(ctrl)
 
             panel:KeyBinder(language.GetPhrase('#upgui.key.trigger_key'), 'upar_key_trigger_key')
-            panel:CheckBox(language.GetPhrase('#upgui.key.vault') .. language.GetPhrase('#upgui.motion.require_shift'), 'upar_key_vault_require_shift')
-            panel:CheckBox(language.GetPhrase('#upgui.key.doublevault') .. language.GetPhrase('#upgui.motion.require_shift'), 'upar_key_doublevault_require_shift')
+            panel:CheckBox(language.GetPhrase('#upgui.key.vault') .. language.GetPhrase('#upgui.action.require_shift'), 'upar_key_vault_require_shift')
+            panel:CheckBox(language.GetPhrase('#upgui.key.doublevault') .. language.GetPhrase('#upgui.action.require_shift'), 'upar_key_doublevault_require_shift')
             panel:CheckBox(language.GetPhrase('#upgui.key.block_backstrafe'), 'upar_key_block_backstrafe')
-            panel:CheckBox(language.GetPhrase('#upgui.motion.continuous_detect'), 'upar_continuous_detect')
-            panel:ControlHelp(language.GetPhrase('#upgui.motion.continuous_detect.desc'))
-            panel:NumSlider(language.GetPhrase('#upgui.motion.continuous_detect_interval'),
+            panel:CheckBox(language.GetPhrase('#upgui.action.continuous_detect'), 'upar_continuous_detect')
+            panel:ControlHelp(language.GetPhrase('#upgui.action.continuous_detect.desc'))
+            panel:NumSlider(language.GetPhrase('#upgui.action.continuous_detect_interval'),
                 'upar_continuous_detect_interval', 1, 20, 0)
-            panel:ControlHelp(language.GetPhrase('#upgui.motion.continuous_detect_interval.desc'))
+            panel:ControlHelp(language.GetPhrase('#upgui.action.continuous_detect_interval.desc'))
             
             panel:Help('')
             panel:ControlHelp('=========== '.. UPar.Version ..' ===========')
