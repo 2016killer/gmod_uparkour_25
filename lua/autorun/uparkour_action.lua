@@ -23,6 +23,7 @@ UPar.ActionMAGIC = {
 
     DOUBLEVAULT_CLIMB_EXIT_SCALE = 0.2,
     DIRECTION_CHECK_MIN_SPEED = 200,
+    GLASS_DAMAGE_MULTIPLIER = 4,
 }
 
 local DETECT_PARKOUR = 1
@@ -782,10 +783,12 @@ local function GetParkourNodes(ply, cmd)
         for _, glasses in ipairs(glassGroups) do
             for _, glass in ipairs(glasses or {}) do
                 if IsValid(glass) then
-                    local health = glass:Health()
-                    if health > 0 then
-                        glass:TakeDamage(health, ply, ply)
-                    end
+                    local damage = math.abs(
+                        math.max(glass:Health(), glass:GetMaxHealth())
+                            * UPar.ActionMAGIC.GLASS_DAMAGE_MULTIPLIER
+                    )
+                    glass:SetHealth(0)
+                    glass:TakeDamage(damage, ply, ply)
                 end
             end
         end
