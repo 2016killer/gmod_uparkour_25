@@ -781,14 +781,27 @@ local function GetParkourNodesByDetector(ply, cmd, useIgnoreGlass)
     if useIgnoreGlass and nodes and (action == 'vault' or action == 'double_vault') then
         local glassGroups = { data.blockClimbGlasses, data.blockVaultGlasses }
         for _, glasses in ipairs(glassGroups) do
-            for _, glass in ipairs(glasses or {}) do
+            for _, glassEntry in ipairs(glasses or {}) do
+                local glass = glassEntry.ent
                 if IsValid(glass) then
                     local damage = math.abs(
                         math.max(glass:Health(), glass:GetMaxHealth())
                             * UPar.ActionMAGIC.GLASS_DAMAGE_MULTIPLIER
                     )
-                    glass:SetHealth(0)
-                    glass:TakeDamage(damage, ply, ply)
+                    local damageTrace = glassEntry.damageTrace
+                    if damageTrace then
+                        local damageInfo = DamageInfo()
+                        damageInfo:SetDamage(damage)
+                        damageInfo:SetAttacker(ply)
+                        damageInfo:SetInflictor(ply)
+                        damageInfo:SetDamageType(DMG_BULLET)
+                        damageInfo:SetDamagePosition(damageTrace.HitPos)
+                        glass:DispatchTraceAttack(damageInfo, damageTrace,
+                            damageTrace.HitNormal)
+                    else
+                        glass:SetHealth(0)
+                        glass:TakeDamage(damage, ply, ply)
+                    end
                 end
             end
         end

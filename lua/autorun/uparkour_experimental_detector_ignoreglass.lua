@@ -10,7 +10,8 @@ local DEBUG_COLOR = {
 }
 
 UPar.DetectorIgnoreGlassMAGIC = {
-    MAX_IGNORED_GLASSES = 10 -- 最大忽略玻璃数量
+    MAX_IGNORED_GLASSES = 10, -- 最大忽略玻璃数量
+    GLASS_DAMAGE_TRACE_OFFSET = 5, -- 伤害 Trace 向玻璃内部偏移
 }
 
 local upar_throughglass_volume_limit = CreateConVar(
@@ -75,9 +76,27 @@ local function IsGlass(entity)
 end
 
 local function TraceHullIgnoreGlass(trace, glasses, debugflag)
+    local function FindGlassEntry(entity)
+        for _, glass in ipairs(glasses) do
+            if glass.ent == entity then return glass end
+        end
+    end
+
+    local function CaptureGlassDamageTrace(result)
+        if result.Entity:GetClass() ~= 'func_breakable_surf' then return end
+
+        local damageTrace = {}
+        for key, value in pairs(result) do
+            damageTrace[key] = value
+        end
+        damageTrace.HitPos = result.HitPos
+            + result.Normal * UPar.DetectorIgnoreGlassMAGIC.GLASS_DAMAGE_TRACE_OFFSET
+        return damageTrace
+    end
+
     for _, glass in ipairs(glasses) do
-        if not table.HasValue(trace.filter, glass) then
-            trace.filter[#trace.filter + 1] = glass
+        if not table.HasValue(trace.filter, glass.ent) then
+            trace.filter[#trace.filter + 1] = glass.ent
         end
     end
 
@@ -106,7 +125,8 @@ local function TraceHullIgnoreGlass(trace, glasses, debugflag)
             return result
         end
 
-        if not table.HasValue(glasses, result.Entity) then
+        local glass = FindGlassEntry(result.Entity)
+        if not glass then
             if #glasses >= UPar.DetectorIgnoreGlassMAGIC.MAX_IGNORED_GLASSES then
                 if IsDev() then
                     print('[UPar] TraceHullIgnoreGlass', debugflag, 'Max ignored glass count reached',
@@ -114,7 +134,13 @@ local function TraceHullIgnoreGlass(trace, glasses, debugflag)
                 end
                 return result
             end
-            glasses[#glasses + 1] = result.Entity
+            glass = {
+                ent = result.Entity,
+            }
+            glasses[#glasses + 1] = glass
+        end
+        if not glass.damageTrace then
+            glass.damageTrace = CaptureGlassDamageTrace(result)
         end
         if IsDev() then
             print('[UPar] TraceHullIgnoreGlass', debugflag, 'Ignoring glass', result.Entity,
@@ -124,55 +150,6 @@ local function TraceHullIgnoreGlass(trace, glasses, debugflag)
     end
 end
 
-local function TraceLineIgnoreGlass(trace, glasses, debugflag)
-    for _, glass in ipairs(glasses) do
-        if not table.HasValue(trace.filter, glass) then
-            trace.filter[#trace.filter + 1] = glass
-        end
-    end
-
-    while true do
-        local result = util.TraceLine(trace)
-        if result.StartSolid then
-            if IsDev() then
-                print('[UPar] TraceLineIgnoreGlass', debugflag, 'StartSolid', result.Entity,
-                    IsValid(result.Entity) and result.Entity:GetClass() or 'Invalid')
-            end
-            return result
-        end
-
-        if not result.Hit then
-            if IsDev() then
-                print('[UPar] TraceLineIgnoreGlass', debugflag, 'NoHit')
-            end
-            return result
-        end
-
-        if not IsGlass(result.Entity) then
-            if IsDev() then
-                print('[UPar] TraceLineIgnoreGlass', debugflag, 'Returning result', result.Entity,
-                    IsValid(result.Entity) and result.Entity:GetClass() or 'Invalid')
-            end
-            return result
-        end
-
-        if not table.HasValue(glasses, result.Entity) then
-            if #glasses >= UPar.DetectorIgnoreGlassMAGIC.MAX_IGNORED_GLASSES then
-                if IsDev() then
-                    print('[UPar] TraceLineIgnoreGlass', debugflag, 'Max ignored glass count reached',
-                        result.Entity, result.Entity:GetClass())
-                end
-                return result
-            end
-            glasses[#glasses + 1] = result.Entity
-        end
-        if IsDev() then
-            print('[UPar] TraceLineIgnoreGlass', debugflag, 'Ignoring glass', result.Entity,
-                result.Entity:GetClass())
-        end
-        trace.filter[#trace.filter + 1] = result.Entity
-    end
-end
 
 local function HeightDetectorIgnoreGlass(
     ply,

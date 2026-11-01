@@ -3,7 +3,7 @@
 -- 运动曲线与运行逻辑见 autorun/uparkour_motion.lua, 它依赖本文件先加载.
 
 UPar = UPar or {}
-UPar.Version = '2.6.0 Reupload'
+UPar.Version = '2.6.1 Reupload'
 UPar.ObstacleEntityClassFilter = UPar.ObstacleEntityClassFilter or {
 
 
@@ -89,8 +89,8 @@ Platform.FIELDS = {
     'groundClose',-- 玩家脚下附近是否有地面, boolean
     'dropTravel', -- 下探探针的垂直移动距离, Source 单位; 无下探时为 nil
     'obstacleNormal', -- 障碍法线(朝玩家侧), Vector
-    'blockClimbGlasses', -- 阻止攀爬的玻璃实体, table
-    'blockVaultGlasses', -- 翻越时需要破坏的玻璃实体, table
+    'blockClimbGlasses', -- 阻止攀爬的玻璃记录, table
+    'blockVaultGlasses', -- 翻越时需要破坏的玻璃记录, table
 }
 
 function Platform.new(t)
@@ -122,8 +122,8 @@ Pulse.FIELDS = {
     'vaultLanding', -- 翻越最终落脚点, Vector
     'thickness',    -- 反向站立盒测得的通行厚度, Source 单位
     'obstacleNormal', -- 障碍法线(朝玩家侧), Vector
-    'blockClimbGlasses', -- 阻止攀爬的玻璃实体, table
-    'blockVaultGlasses', -- 翻越时需要破坏的玻璃实体, table
+    'blockClimbGlasses', -- 阻止攀爬的玻璃记录, table
+    'blockVaultGlasses', -- 翻越时需要破坏的玻璃记录, table
 }
 
 function Pulse.new(t)
