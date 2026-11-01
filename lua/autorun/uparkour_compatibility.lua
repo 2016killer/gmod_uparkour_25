@@ -1,3 +1,5 @@
+AddCSLuaFile()
+
 hook.Add('ShouldDisableLegs', 'UPExtGmodLegs3Compat', function()
 	if VMLegs and VMLegs:IsActive() then
 		return true
