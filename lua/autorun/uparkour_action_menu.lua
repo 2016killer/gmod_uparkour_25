@@ -4,7 +4,7 @@ if not CLIENT then return end
 
 hook.Add('PopulateToolMenu', 'upar.menu.motion', function()
     spawnmenu.AddToolMenuOption('Options', 'UParkour', 'upar.menu.motion',
-        language.GetPhrase('#upgui.menu.motion'), '', '', function(panel)
+        language.GetPhrase('#upgui.menu.action'), '', '', function(panel)
             panel:Clear()
 
             local ctrl = vgui.Create('ControlPresets', panel)
