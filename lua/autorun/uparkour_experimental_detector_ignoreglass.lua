@@ -311,7 +311,7 @@ function UPar.ClassifyObstacleTypeIgnoreGlass(ply, probeDirection)
         dir * playerWidth * UPar.DetectorMAGIC.OBS_REACH,
         glasses
     )
-    if not obstacle then return UPar.ClassifyObstacleType(ply, probeDirection) end
+    if not obstacle then return end
 
     local obstacleNormal = NormalizeXY(obstacle.HitNormal)
 
@@ -329,7 +329,7 @@ function UPar.ClassifyObstacleTypeIgnoreGlass(ply, probeDirection)
         step,
         glasses
     )
-    if not heightTrace then return UPar.ClassifyObstacleType(ply, probeDirection) end
+    if not heightTrace then return end
 
     local blockClimbGlasses = {}
     for _, glass in ipairs(glasses) do

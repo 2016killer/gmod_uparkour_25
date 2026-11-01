@@ -681,12 +681,12 @@ local function GetWallRunNodes(ply, cmd)
     return nodes, 'wallrun', data
 end
 
-local function GetParkourNodes(ply, cmd)
+local function GetParkourNodesByDetector(ply, cmd, useIgnoreGlass)
     local forwardHeld = cmd and cmd:KeyDown(IN_FORWARD) or ply:KeyDown(IN_FORWARD)
 
     local direction = GetFlatViewDirection(ply)
     local kind, data
-    if upar_throughglass_vault_enabled:GetBool() then
+    if useIgnoreGlass then
         kind, data = UPar.ClassifyObstacleTypeIgnoreGlass(ply, direction)
     else
         kind, data = UPar.ClassifyObstacleType(ply, direction)
@@ -778,7 +778,7 @@ local function GetParkourNodes(ply, cmd)
         if nodes then action = 'low_climb' end
     end
 
-    if nodes and (action == 'vault' or action == 'double_vault') then
+    if useIgnoreGlass and nodes and (action == 'vault' or action == 'double_vault') then
         local glassGroups = { data.blockClimbGlasses, data.blockVaultGlasses }
         for _, glasses in ipairs(glassGroups) do
             for _, glass in ipairs(glasses or {}) do
@@ -799,6 +799,15 @@ local function GetParkourNodes(ply, cmd)
     end
 
     return nodes, action
+end
+
+local function GetParkourNodes(ply, cmd)
+    if upar_throughglass_vault_enabled:GetBool() then
+        local nodes, action = GetParkourNodesByDetector(ply, cmd, true)
+        if nodes then return nodes, action end
+    end
+
+    return GetParkourNodesByDetector(ply, cmd, false)
 end
 
 local function TryMove(ply, cmd, detectMask)
