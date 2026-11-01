@@ -13,6 +13,15 @@ UPar.DetectorIgnoreGlassMAGIC = {
     MAX_IGNORED_GLASSES = 10 -- 最大忽略玻璃数量
 }
 
+local upar_throughglass_volume_limit = CreateConVar(
+    'upar_throughglass_volume_limit', '0',
+    { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
+local upar_throughglass_health_limit = CreateConVar(
+    'upar_throughglass_health_limit', '0',
+    { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
+
 local function IsDev()
     local convar = GetConVar('developer')
     return convar ~= nil and convar:GetInt() > 0
@@ -27,9 +36,42 @@ end
 
 local function IsGlass(entity)
     if not IsValid(entity) or entity:IsWorld() then return false end
-    if entity:GetClass() == 'func_breakable_surf' then return true end
 
-    return entity:GetMaterialType() == MAT_GLASS
+    local class = entity:GetClass()
+    local isGlass = entity:GetMaterialType() == MAT_GLASS
+        or entity:GetCollisionGroup() == COLLISION_GROUP_BREAKABLE_GLASS
+
+    if class == 'func_breakable_surf' then
+        local surfaceType = tonumber(entity:GetInternalVariable('m_nSurfaceType'))
+        if surfaceType == 1 then return false end
+        isGlass = true
+    end
+
+    if not isGlass then return false end
+
+    local health = entity:Health()
+    local maxHealth = entity:GetMaxHealth()
+    local phys = entity:GetPhysicsObject()
+    local volume = IsValid(phys) and phys:GetVolume() or 0
+    if volume <= 0 then
+        local size = entity:OBBMaxs() - entity:OBBMins()
+        volume = math.abs(size.x * size.y * size.z)
+    end
+
+    local volumeLimit = upar_throughglass_volume_limit:GetFloat()
+    local healthLimit = upar_throughglass_health_limit:GetFloat()
+
+    if IsDev() then
+        print('[UPar] IsGlass', entity, class, 'health=' .. tostring(health),
+            'maxHealth=' .. tostring(maxHealth), 'volume=' .. tostring(volume),
+            'volumeLimit=' .. tostring(volumeLimit), 'healthLimit=' .. tostring(healthLimit))
+    end
+
+    if maxHealth <= 2 then return false end
+    if volumeLimit > 0 and volume >= volumeLimit then return false end
+    if healthLimit > 0 and health >= healthLimit then return false end
+
+    return true
 end
 
 local function TraceHullIgnoreGlass(trace, glasses, debugflag)
