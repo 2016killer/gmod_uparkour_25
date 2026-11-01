@@ -779,7 +779,10 @@ local function GetParkourNodesByDetector(ply, cmd, useIgnoreGlass)
     end
 
     if useIgnoreGlass and nodes and (action == 'vault' or action == 'double_vault') then
-        local glassGroups = { data.blockClimbGlasses, data.blockVaultGlasses }
+        local glassGroups = {
+            data.blockClimbGlasses or {},
+            data.blockVaultGlasses or {},
+        }
         for _, glasses in ipairs(glassGroups) do
             for _, glassEntry in ipairs(glasses or {}) do
                 local glass = glassEntry.ent
