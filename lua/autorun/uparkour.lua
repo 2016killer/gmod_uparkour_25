@@ -213,4 +213,11 @@ if CLIENT then
             end)
         end
     end)
+elseif SERVER then
+    concommand.Add('upar_debug_entity_health', function(ply)
+        local tr = ply:GetEyeTrace()
+        if IsValid(tr.Entity) then
+            debugoverlay.Text(tr.HitPos, string.format('Ent: %s, MaxHealth: %s', tr.Entity, tr.Entity:GetMaxHealth()), 2, false)
+        end
+    end)
 end

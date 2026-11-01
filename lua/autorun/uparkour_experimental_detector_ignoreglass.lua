@@ -68,7 +68,7 @@ local function IsGlass(entity)
             'volumeLimit=' .. tostring(volumeLimit), 'healthLimit=' .. tostring(healthLimit))
     end
 
-    if maxHealth <= 2 then return false end
+    if class ~= 'func_breakable_surf' and maxHealth <= 2 then return false end
     if volumeLimit > 0 and volume >= volumeLimit then return false end
     if healthLimit > 0 and health >= healthLimit then return false end
 
