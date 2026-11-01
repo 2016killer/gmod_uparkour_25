@@ -89,6 +89,8 @@ Platform.FIELDS = {
     'groundClose',-- 玩家脚下附近是否有地面, boolean
     'dropTravel', -- 下探探针的垂直移动距离, Source 单位; 无下探时为 nil
     'obstacleNormal', -- 障碍法线(朝玩家侧), Vector
+    'blockClimbGlasses', -- 阻止攀爬的玻璃实体, table
+    'blockVaultGlasses', -- 翻越时需要破坏的玻璃实体, table
 }
 
 function Platform.new(t)
@@ -120,6 +122,8 @@ Pulse.FIELDS = {
     'vaultLanding', -- 翻越最终落脚点, Vector
     'thickness',    -- 反向站立盒测得的通行厚度, Source 单位
     'obstacleNormal', -- 障碍法线(朝玩家侧), Vector
+    'blockClimbGlasses', -- 阻止攀爬的玻璃实体, table
+    'blockVaultGlasses', -- 翻越时需要破坏的玻璃实体, table
 }
 
 function Pulse.new(t)

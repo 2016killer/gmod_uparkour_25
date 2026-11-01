@@ -139,6 +139,10 @@ local upar_water_block_wallrun = CreateConVar(
     'upar_water_block_wallrun', '1',
     { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
 )
+local upar_throughglass_vault_enabled = CreateConVar(
+    'upar_throughglass_vault_enabled', '0',
+    { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
+)
 
 local upar_lowclimb_enabled = CreateConVar(
     'upar_lowclimb_enabled', '1', { FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_NOTIFY, FCVAR_SERVER_CAN_EXECUTE }
@@ -680,7 +684,12 @@ local function GetParkourNodes(ply, cmd)
     local forwardHeld = cmd and cmd:KeyDown(IN_FORWARD) or ply:KeyDown(IN_FORWARD)
 
     local direction = GetFlatViewDirection(ply)
-    local kind, data = UPar.ClassifyObstacleType(ply, direction)
+    local kind, data
+    if upar_throughglass_vault_enabled:GetBool() then
+        kind, data = UPar.ClassifyObstacleTypeIgnoreGlass(ply, direction)
+    else
+        kind, data = UPar.ClassifyObstacleType(ply, direction)
+    end
     if not kind then return end
     local mins, maxs = ply:GetCollisionBounds()
     local playerHeight = maxs.z - mins.z
@@ -711,6 +720,7 @@ local function GetParkourNodes(ply, cmd)
     local highMax = upar_highclimb_max_height:GetFloat()
     local lowHeight = heightRatio >= lowMin and heightRatio <= lowMax
     local highHeight = heightRatio >= highMin and heightRatio <= highMax
+    local hasBlockClimbGlasses = data.blockClimbGlasses ~= nil and #data.blockClimbGlasses > 0
 
     if IsDev() then 
         print(string.format('[UPar] heightRatio=%.2f LOWCLIMB_MIN_HEIGHT=%.2f LOWCLIMB_MAX_HEIGHT=%.2f', heightRatio, lowMin, lowMax))
@@ -722,10 +732,10 @@ local function GetParkourNodes(ply, cmd)
 
 
     local lowClimbCondition = upar_lowclimb_enabled:GetBool()
-        and totalCondition and climbGeometry and lowHeight
+        and totalCondition and not hasBlockClimbGlasses and climbGeometry and lowHeight
         and WithinTriggerDistance(ply, data, 'low_climb')
     local highClimbCondition = upar_highclimb_enabled:GetBool()
-        and totalCondition and climbGeometry and highHeight
+        and totalCondition and not hasBlockClimbGlasses and climbGeometry and highHeight
         and WithinTriggerDistance(ply, data, 'high_climb')
     local vaultCondition = upar_vault_enabled:GetBool()
         and totalCondition and kind == 'pulse' and lowHeight
@@ -765,6 +775,20 @@ local function GetParkourNodes(ply, cmd)
         and AllowAction(ply, 'low_climb', kind, data, cmd) then
         nodes = BuildClimbMove(ply, data, direction, 'low_climb')
         if nodes then action = 'low_climb' end
+    end
+
+    if nodes and (action == 'vault' or action == 'double_vault') then
+        local glassGroups = { data.blockClimbGlasses, data.blockVaultGlasses }
+        for _, glasses in ipairs(glassGroups) do
+            for _, glass in ipairs(glasses or {}) do
+                if IsValid(glass) then
+                    local health = glass:Health()
+                    if health > 0 then
+                        glass:TakeDamage(health, ply, ply)
+                    end
+                end
+            end
+        end
     end
 
     if nodes then
