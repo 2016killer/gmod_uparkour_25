@@ -846,7 +846,12 @@ local function TryMove(ply, cmd, detectMask)
             local nodes, action = GetParkourNodes(ply, cmd)
             if nodes then
                 UPar.EmitMoveFlag(ply, 'wallrun_interrupt')
-                PublishMove(ply, nodes, action, UPar.MotionMode.TELEPORT)
+                local move = PublishMove(ply, nodes, action, UPar.MotionMode.TELEPORT)
+
+                -- 当动作是 low_climb 或 high_climb 时，清除 last_normal
+                if move and (action == 'low_climb' or action == 'high_climb') then 
+                    ply.upar_wallrun_last_normal = nil 
+                end
             end
         end
         return
@@ -869,6 +874,11 @@ local function TryMove(ply, cmd, detectMask)
 
     local move = PublishMove(ply, nodes, action, motionMode)
     if move and action == 'wallrun' then move.wallrun = wallrun end
+
+    -- 当动作是 low_climb 或 high_climb 时，清除 last_normal
+    if move and (action == 'low_climb' or action == 'high_climb') then 
+        ply.upar_wallrun_last_normal = nil 
+    end
 end
 
 local function ShouldRunContinuousDetect(ply)
