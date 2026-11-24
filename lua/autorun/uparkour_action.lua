@@ -848,8 +848,8 @@ local function TryMove(ply, cmd, detectMask)
                 UPar.EmitMoveFlag(ply, 'wallrun_interrupt')
                 local move = PublishMove(ply, nodes, action, UPar.MotionMode.TELEPORT)
 
-                -- 当动作是 low_climb 或 high_climb 时，清除 last_normal
-                if move and (action == 'low_climb' or action == 'high_climb') then 
+                -- 当动作是低爬、高爬、翻越、双翻越时，清除 last_normal
+                if move and (action == 'low_climb' or action == 'high_climb' or action == 'vault' or action == 'double_vault') then 
                     ply.upar_wallrun_last_normal = nil 
                 end
             end
@@ -875,8 +875,8 @@ local function TryMove(ply, cmd, detectMask)
     local move = PublishMove(ply, nodes, action, motionMode)
     if move and action == 'wallrun' then move.wallrun = wallrun end
 
-    -- 当动作是 low_climb 或 high_climb 时，清除 last_normal
-    if move and (action == 'low_climb' or action == 'high_climb') then 
+    -- 当动作是低爬、高爬、翻越、双翻越时，清除 last_normal
+    if move and (action == 'low_climb' or action == 'high_climb' or action == 'vault' or action == 'double_vault') then 
         ply.upar_wallrun_last_normal = nil 
     end
 end
